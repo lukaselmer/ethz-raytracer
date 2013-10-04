@@ -3,7 +3,7 @@
   this.loadScene = function() {};
 
   this.trace = function(color, pixelX, pixelY) {
-    return color.setElements([pixelX / width, pixelY / height, pixelX * pixelY / (width * height)]);
+    return color.setElements([pixelX / width, pixelY / height * 0.9, pixelX * pixelY / (width * height / 2)]);
   };
 
 }).call(this);
