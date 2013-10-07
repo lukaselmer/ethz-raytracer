@@ -2,12 +2,6 @@
 # you can declare global variables here
 # ...
 
-### Random log ###
-console.setRlog = (p = 0.0001) ->
-  @shoulLog = Math.random() <= p
-console.rlog = (msg) ->
-  return unless @shoulLog
-  console.log(msg)
 
 class Color
   constructor: (r, g, b) ->
@@ -30,15 +24,35 @@ class Scene
   intersections: (ray) ->
     object for object in @objects when object.intersects(ray)
 
+  firstIntersection: (ray) ->
+    min = Infinity
+    ret = null
+    @objects.forEach (object) ->
+      i = object.intersects(ray)
+      if i && i < min
+        min = i
+        ret = object
+    ret
+
+
+
 
 class Camera
-  constructor: (@position, @direction, @upDirection, @fieldOfView, @width, @height) ->
+  constructor: (@position, @direction, @upDirection, @distance, @fieldOfView, @width, @height) ->
     this.calibrateCamera()
 
   calibrateCamera: () ->
     @direction = @direction.toUnitVector()
     @rightDirection = @direction.cross(@upDirection).toUnitVector()
     @upDirection = @rightDirection.cross(@direction).toUnitVector()
+    @imagePaneHeight = 2 * Math.tan(@fieldOfView / 2) * @distance
+    @imagePaneWidth = @imagePaneHeight / @height * @width
+
+    @imageCenter = @position.add(@direction.multiply(@distance))
+    @imageTop = @imageCenter.add(@upDirection.multiply(@imagePaneHeight / 2))
+    @imageBottom = @imageCenter.add(@upDirection.multiply(-1 * @imagePaneHeight / 2))
+    @imageLeft = @imageCenter.add(@rightDirection.multiply(-1 * @imagePaneWidth / 2))
+    @imageRight = @imageCenter.add(@rightDirection.multiply(@imagePaneWidth / 2))
 
   getCenter: () ->
     @position.add(@direction)
@@ -64,10 +78,11 @@ class Sphere
     o = ray.line.anchor
     d = ray.line.direction
     c = @center
-    r = @radius
 
     # c-o
     c_minus_o = c.subtract(o)
+    console.rlog "c_minus_o:"
+    console.rlog c_minus_o
 
     # ||c-o||^2
     distSquared = c_minus_o.dot(c_minus_o)
@@ -86,14 +101,10 @@ class Sphere
 
     # t = (o-c)*d ± sqrt(r^2 - D^2)
     x = @radiusSquared - shortestDistanceFromCenterToRaySquared
-    #return false if x < 0
+    return false if x < 0
     t = rayDistanceClosestToCenter - Math.sqrt(x)
     console.rlog "halfChordDistance=" + t
-
-    console.rlog ray.line
-    # TODO: implement this
-
-    true
+    t
 
 class Ray
   constructor: (@line) ->
@@ -105,50 +116,43 @@ class RayTracer
     # 1. shoot a ray determined from the camera parameters and the pixel position in the image
     ray = this.castRay()
 
-    #console.log ray
-    #xxx
-
     # 2. intersect the ray to scene elements and determine the closest one
-    intersections = @scene.intersections(ray)
-    c = new Color(0, 0, 0);
-    if intersections.length == 0
-      console.rlog intersections
-      #why_this_never_happen
-    if intersections.length == 1
-      console.rlog intersections
-      c = c.add(intersections[0].reflectionProperties.ambientColor)
-    if intersections.length == 2
-      console.rlog intersections
-      c = c.add(intersections[1].reflectionProperties.ambientColor)
-      #why_this_never_happen
+    intersection = @scene.firstIntersection(ray)
+
+    c = new Color(0, 0, 0)
+    if intersection
+      console.rlog intersection
+      c = c.add(intersection.reflectionProperties.ambientColor)
 
     #    if intersections.length > 0
     #      console.rlog intersections
     #      c = intersections[intersections.length - 1].reflectionProperties.ambientColor
 
-    @color.setElements(c.toArray());
+    @color.setElements(c.toArray())
 
 
-  # 3. check if the intersection point is illuminated by each light source
-  # 4. shade the intersection point using the meterial attributes and the lightings
-  # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
+    # 3. check if the intersection point is illuminated by each light source
+    
+    # 4. shade the intersection point using the meterial attributes and the lightings
+    # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
 
-  #c = new Color(@pixelX / width,
-  #  @pixelY / height * 0.9,
-  #  @pixelX * @pixelY / (width * height / 2))
-  #@color.setElements(c.toArray());
 
   castRay: () ->
     camera = scene.camera
-    [width, height] = [camera.width, camera.height]
-    [centerPixelX, centerPixelY] = [(@pixelX / width) - 0.5, (@pixelY / height) - 0.5]
-    rayDirection = camera.rightDirection.multiply(centerPixelX).add(camera.upDirection.multiply(centerPixelY)).add(camera.direction)
-    new Ray($L(scene.camera.position, rayDirection.toUnitVector()))
+
+    centerPixelX = (@pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight # + 0.5 for the center of the pixel
+    centerPixelY = (-@pixelY - 0.5 + camera.height / 2) / camera.width  * camera.imagePaneWidth # - 0.5 for the center of the pixel
+
+    rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
+      camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
+
+    new Ray($L(camera.position, rayDirection))
 
 
 # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
 this.loadScene = () ->
-  camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 40, 800, 600)
+  fieldOfView = 40 / 180 * Math.PI
+  camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, 800, 600)
   light = new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1, 0.2))
 
   scene = new Scene(camera, light)
