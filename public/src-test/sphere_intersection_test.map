@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "sphere_intersection_test.js",
+  "sourceRoot": "",
+  "sources": [
+    "sphere_intersection_test.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA,KAAA,KAAA;;CAAA,CAAA,CAAc,KAAA,GAAd,EAAc;;CAAd,CAEA,CAAkC,MAAb,EAAV;CACT,IAAA,GAAA;CAAA,GAAA,KAAA;CAAA,CACQ,CAAA,CAAR,CAAA;CACM,CAAO,GAAb,MAAA;CALF,EAEkC;CAFlC"
+}
