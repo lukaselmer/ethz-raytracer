@@ -4,6 +4,11 @@
 
   Color = (function() {
     function Color(r, g, b) {
+      if (r instanceof Vector) {
+        g = r.elements[1];
+        b = r.elements[2];
+        r = r.elements[0];
+      }
       if (r < 0) {
         r = 0;
       }
@@ -25,19 +30,16 @@
       this.val = $V([r, g, b]);
     }
 
-    Color.prototype.toArray = function() {
-      return [this.val.elements[0], this.val.elements[1], this.val.elements[2]];
-    };
-
     Color.prototype.add = function(color) {
-      var v;
-      color.val;
-      v = this.val.add(color.val);
-      return new Color(v.elements[0], v.elements[1], v.elements[2]);
+      return new Color(this.val.add(color.val));
     };
 
     Color.prototype.multiply = function(scale) {
-      return new Color(this.val.elements[0] * scale, this.val.elements[1] * scale, this.val.elements[2] * scale);
+      return new Color(this.val.multiply(scale));
+    };
+
+    Color.prototype.toArray = function() {
+      return this.val.dup().elements;
     };
 
     return Color;
@@ -45,14 +47,19 @@
   })();
 
   Scene = (function() {
-    function Scene(camera, light) {
+    function Scene(camera, globalAmbient) {
       this.camera = camera;
-      this.light = light;
+      this.globalAmbient = globalAmbient;
       this.objects = [];
+      this.lights = [];
     }
 
+    Scene.prototype.addLight = function(light) {
+      return this.lights.push(light);
+    };
+
     Scene.prototype.addObject = function(object) {
-      return this.objects[this.objects.length] = object;
+      return this.objects.push(object);
     };
 
     Scene.prototype.intersections = function(ray) {
@@ -133,11 +140,10 @@
   })();
 
   LightIntensity = (function() {
-    function LightIntensity(ambient, diffuse, specular, globalAmbient) {
+    function LightIntensity(ambient, diffuse, specular) {
       this.ambient = ambient;
       this.diffuse = diffuse;
       this.specular = specular;
-      this.globalAmbient = globalAmbient;
     }
 
     return LightIntensity;
@@ -222,32 +228,36 @@
     }
 
     RayTracer.prototype.trace = function() {
-      var c, intersection, obj, pos, ray;
+      var c, globalAmbient, globalAmbientColor, intersection, light, obj, pos, ray, _i, _len, _ref;
       ray = this.castRay();
       intersection = this.scene.firstIntersection(ray);
       c = new Color(0, 0, 0);
       if (intersection) {
-        console.rlog(intersection[1]);
         pos = intersection[0];
         obj = intersection[1];
-        c = this.illuminate(pos, obj, ray);
+        globalAmbient = this.scene.globalAmbient;
+        globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
+        c = c.add(globalAmbientColor);
+        _ref = this.scene.lights;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          light = _ref[_i];
+          c = c.add(this.illuminate(pos, obj, ray, light));
+        }
       }
       return this.color.setElements(c.toArray());
     };
 
-    RayTracer.prototype.illuminate = function(pos, obj, ray) {
-      var E, ambient, ambientColor, diffuse, frac, globalAmbient, globalAmbientColor, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
+    RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
+      var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
       nv = obj.norm(pos);
       w = ray.line.direction;
-      wl = this.scene.light.location.subtract(pos).toUnitVector();
+      wl = light.location.subtract(pos).toUnitVector();
       wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w);
-      globalAmbient = this.scene.light.intensity.globalAmbient;
-      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
-      ambient = this.scene.light.intensity.ambient;
+      ambient = light.intensity.ambient;
       ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
       kd = obj.reflectionProperties.diffuseColor;
-      E = this.scene.light.intensity.diffuse * nv.dot(wl);
-      diffuse = kd.multiply(E * this.scene.light.intensity.diffuse);
+      E = light.intensity.diffuse * nv.dot(wl);
+      diffuse = kd.multiply(E * light.intensity.diffuse);
       n = obj.reflectionProperties.specularExponent;
       ks = obj.reflectionProperties.specularColor;
       frac = Math.pow(wr.dot(wl), n) / nv.dot(wl);
@@ -256,7 +266,7 @@
         spepcularIntensity = 0;
       }
       specularHighlights = ks.multiply(spepcularIntensity);
-      return globalAmbientColor.add(ambientColor).add(diffuse).add(specularHighlights);
+      return ambientColor.add(diffuse).add(specularHighlights);
     };
 
     RayTracer.prototype.castRay = function() {
@@ -273,11 +283,11 @@
   })();
 
   this.loadScene = function() {
-    var camera, fieldOfView, light, scene;
+    var camera, fieldOfView, scene;
     fieldOfView = 40 / 180 * Math.PI;
     camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, 800, 600);
-    light = new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1, 0.2));
-    scene = new Scene(camera, light);
+    scene = new Scene(camera, 0.2);
+    scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
     scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32)));
     scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16)));
     return this.scene = scene;

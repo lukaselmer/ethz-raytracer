@@ -5,6 +5,10 @@
 
 class Color
   constructor: (r, g, b) ->
+    if r instanceof Vector
+      g = r.elements[1]
+      b = r.elements[2]
+      r = r.elements[0]
     r = 0 if r < 0
     g = 0 if g < 0
     b = 0 if b < 0
@@ -12,22 +16,24 @@ class Color
     g = 1 if g > 1
     b = 1 if b > 1
     @val = $V([r, g, b])
-  toArray: ->
-    [@val.elements[0], @val.elements[1], @val.elements[2]]
   add: (color) ->
-    color.val
-    v = @val.add(color.val)
-    new Color(v.elements[0], v.elements[1], v.elements[2])
+    new Color(@val.add(color.val))
   multiply: (scale) ->
-    new Color(@val.elements[0]*scale, @val.elements[1]*scale, @val.elements[2]*scale)
+    new Color(@val.multiply(scale))
+  toArray: ->
+    @val.dup().elements
 
 
 class Scene
-  constructor: (@camera, @light) ->
+  constructor: (@camera, @globalAmbient) ->
     @objects = []
+    @lights = []
+
+  addLight: (light) ->
+    @lights.push light
 
   addObject: (object) ->
-    @objects[@objects.length] = object
+    @objects.push object
 
   intersections: (ray) ->
     object for object in @objects when object.intersects(ray)
@@ -42,7 +48,6 @@ class Scene
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
         ret = [intersectionPoint, object]
     ret
-
 
 
 
@@ -72,7 +77,7 @@ class Light
 
 
 class LightIntensity
-  constructor: (@ambient, @diffuse, @specular, @globalAmbient)->
+  constructor: (@ambient, @diffuse, @specular)->
 
 
 class ReflectionProperty
@@ -136,10 +141,15 @@ class RayTracer
 
     c = new Color(0, 0, 0)
     if intersection
-      console.rlog intersection[1]
       pos = intersection[0]
       obj = intersection[1]
-      c = this.illuminate(pos, obj, ray)
+
+      globalAmbient = @scene.globalAmbient
+      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
+      c = c.add(globalAmbientColor)
+
+      for light in @scene.lights
+        c = c.add(this.illuminate(pos, obj, ray, light))
 
     @color.setElements(c.toArray())
 
@@ -149,25 +159,19 @@ class RayTracer
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
 
 
-  illuminate: (pos, obj, ray) ->
+  illuminate: (pos, obj, ray, light) ->
     nv = obj.norm(pos)
 
-    #obj.reflectionProperties.ambientColor
-
     w = ray.line.direction
-    wl = @scene.light.location.subtract(pos).toUnitVector()
-    #wr = ray.line.direction.reflectionIn(nv).toUnitVector()
+    wl = light.location.subtract(pos).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w)
 
-    globalAmbient = @scene.light.intensity.globalAmbient
-    globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
-
-    ambient = @scene.light.intensity.ambient
+    ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
 
     kd = obj.reflectionProperties.diffuseColor
-    E = @scene.light.intensity.diffuse * nv.dot(wl)
-    diffuse = kd.multiply(E * @scene.light.intensity.diffuse)
+    E = light.intensity.diffuse * nv.dot(wl)
+    diffuse = kd.multiply(E * light.intensity.diffuse)
 
     n = obj.reflectionProperties.specularExponent
     ks = obj.reflectionProperties.specularColor
@@ -176,31 +180,7 @@ class RayTracer
     spepcularIntensity = 0 if frac < 0
     specularHighlights = ks.multiply(spepcularIntensity)
 
-    #distanceToLight = pos.distanceFrom(@scene.light.location)
-    #E = @scene.light.intensity.diffuse / 4 / Math.PI / (distanceToLight * distanceToLight)
-
-
-    #ls
-    #specularReflection = ks.multiply(ls)
-
-    #kt
-    #specularRefraction = kt.multiply(lt)
-
-    globalAmbientColor.add(ambientColor).add(diffuse).add(specularHighlights) #.add(specularReflection).add(specularRefraction)
-
-    #E = n.dot(wl)
-
-
-    #distanceToLight = pos.distanceFrom(@scene.light.location)
-    #E = n.dot(w) * @scene.light.intensity.diffuse / 4 / Math.PI # / (distanceToLight * distanceToLight)
-    #E = n.dot(wl)
-
-
-    #specInt = Math.pow(wr.dot(wl), obj.reflectionProperties.specularExponent) / 4 / Math.PI / (distanceToLight * distanceToLight)
-    #specColor = obj.reflectionProperties.specularColor.multiply(specInt)
-    #E = n.dot(wl)
-    #diffColor = obj.reflectionProperties.diffuseColor.multiply(E)
-    #diffColor.add(obj.reflectionProperties.ambientColor)
+    ambientColor.add(diffuse).add(specularHighlights) #.add(specularReflection).add(specularRefraction)
 
 
 
@@ -220,9 +200,10 @@ class RayTracer
 this.loadScene = () ->
   fieldOfView = 40 / 180 * Math.PI
   camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, 800, 600)
-  light = new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1, 0.2))
 
-  scene = new Scene(camera, light)
+  scene = new Scene(camera, 0.2)
+  scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)))
+  #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
 
   scene.addObject(new Sphere($V([0, 0, 0]), 2,
     new ReflectionProperty(
