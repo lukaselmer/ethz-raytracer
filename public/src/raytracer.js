@@ -2,6 +2,11 @@
 (function() {
   var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere;
 
+  this.RayConfig = {
+    width: 4000,
+    height: 3000
+  };
+
   Color = (function() {
     function Color(r, g, b) {
       if (r instanceof Vector) {
@@ -36,6 +41,10 @@
 
     Color.prototype.multiply = function(scale) {
       return new Color(this.val.multiply(scale));
+    };
+
+    Color.prototype.multiplyColor = function(color) {
+      return new Color(this.val.elements[0] * color.val.elements[0], this.val.elements[1] * color.val.elements[1], this.val.elements[2] * color.val.elements[2]);
     };
 
     Color.prototype.toArray = function() {
@@ -177,23 +186,16 @@
     Sphere.prototype.intersects = function(ray) {
       var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t, x;
       console.setRlog();
-      console.rlog("");
       o = ray.line.anchor;
       d = ray.line.direction;
       c = this.center;
       c_minus_o = c.subtract(o);
-      console.rlog("c_minus_o:");
-      console.rlog(c_minus_o);
       distSquared = c_minus_o.dot(c_minus_o);
-      console.rlog("distSquared=" + distSquared);
       rayDistanceClosestToCenter = c_minus_o.dot(d);
-      console.rlog("rayDistanceClosestToCenter=" + rayDistanceClosestToCenter);
       if (rayDistanceClosestToCenter < 0) {
         return false;
       }
       shortestDistanceFromCenterToRaySquared = distSquared - (rayDistanceClosestToCenter * rayDistanceClosestToCenter);
-      console.rlog("shortestDistanceFromCenterToRay=" + shortestDistanceFromCenterToRaySquared);
-      console.rlog("@radiusSquared=" + this.radiusSquared);
       if (shortestDistanceFromCenterToRaySquared > this.radiusSquared) {
         return false;
       }
@@ -202,7 +204,6 @@
         return false;
       }
       t = rayDistanceClosestToCenter - Math.sqrt(x);
-      console.rlog("halfChordDistance=" + t);
       return t;
     };
 
@@ -228,23 +229,39 @@
     }
 
     RayTracer.prototype.trace = function() {
-      var c, globalAmbient, globalAmbientColor, intersection, light, obj, pos, ray, _i, _len, _ref;
+      var c, ray;
       ray = this.castRay();
-      intersection = this.scene.firstIntersection(ray);
       c = new Color(0, 0, 0);
+      c = this.traceRec(ray, c, 10);
+      return this.color.setElements(c.toArray());
+    };
+
+    RayTracer.prototype.traceRec = function(ray, color, times) {
+      var globalAmbient, globalAmbientColor, intersection, ks, light, nv, obj, pos, specularReflection, w, wr, _i, _len, _ref;
+      intersection = this.scene.firstIntersection(ray);
       if (intersection) {
         pos = intersection[0];
         obj = intersection[1];
         globalAmbient = this.scene.globalAmbient;
         globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
-        c = c.add(globalAmbientColor);
+        color = color.add(globalAmbientColor);
         _ref = this.scene.lights;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           light = _ref[_i];
-          c = c.add(this.illuminate(pos, obj, ray, light));
+          color = color.add(this.illuminate(pos, obj, ray, light));
         }
+        if (times <= 0) {
+          return color;
+        }
+        nv = obj.norm(pos);
+        w = ray.line.direction;
+        wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1);
+        ks = obj.reflectionProperties.specularColor;
+        specularReflection = this.traceRec(new Ray($L(pos, wr)), new Color(0, 0, 0), times - 1);
+        specularReflection = specularReflection.multiplyColor(ks);
+        color = color.add(specularReflection);
       }
-      return this.color.setElements(c.toArray());
+      return color;
     };
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
@@ -288,7 +305,7 @@
   this.loadScene = function() {
     var camera, fieldOfView, scene;
     fieldOfView = 40 / 180 * Math.PI;
-    camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, 800, 600);
+    camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height);
     scene = new Scene(camera, 0.2);
     scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
     scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32)));

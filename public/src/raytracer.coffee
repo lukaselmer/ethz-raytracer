@@ -2,6 +2,9 @@
 # you can declare global variables here
 # ...
 
+this.RayConfig =
+  width: 4000
+  height: 3000
 
 class Color
   constructor: (r, g, b) ->
@@ -20,6 +23,8 @@ class Color
     new Color(@val.add(color.val))
   multiply: (scale) ->
     new Color(@val.multiply(scale))
+  multiplyColor: (color) ->
+    new Color(@val.elements[0] * color.val.elements[0], @val.elements[1] * color.val.elements[1], @val.elements[2] * color.val.elements[2])
   toArray: ->
     @val.dup().elements
 
@@ -93,7 +98,7 @@ class Sphere
 
   intersects: (ray) ->
     console.setRlog()
-    console.rlog ""
+    #console.rlog ""
 
     o = ray.line.anchor
     d = ray.line.direction
@@ -101,29 +106,29 @@ class Sphere
 
     # c-o
     c_minus_o = c.subtract(o)
-    console.rlog "c_minus_o:"
-    console.rlog c_minus_o
+    #console.rlog "c_minus_o:"
+    #console.rlog c_minus_o
 
     # ||c-o||^2
     distSquared = c_minus_o.dot(c_minus_o)
-    console.rlog "distSquared=" + distSquared
+    #console.rlog "distSquared=" + distSquared
 
     # (c-o)*d
     rayDistanceClosestToCenter = c_minus_o.dot(d)
-    console.rlog "rayDistanceClosestToCenter=" + rayDistanceClosestToCenter
+    #console.rlog "rayDistanceClosestToCenter=" + rayDistanceClosestToCenter
     return false if rayDistanceClosestToCenter < 0
 
     # D^2 = ||c-o||^2 - ((c-o)*d)^2
     shortestDistanceFromCenterToRaySquared = distSquared - (rayDistanceClosestToCenter * rayDistanceClosestToCenter)
-    console.rlog "shortestDistanceFromCenterToRay=" + shortestDistanceFromCenterToRaySquared
-    console.rlog "@radiusSquared=" + @radiusSquared
+    #console.rlog "shortestDistanceFromCenterToRay=" + shortestDistanceFromCenterToRaySquared
+    #console.rlog "@radiusSquared=" + @radiusSquared
     return false if shortestDistanceFromCenterToRaySquared > @radiusSquared
 
     # t = (o-c)*d ± sqrt(r^2 - D^2)
     x = @radiusSquared - shortestDistanceFromCenterToRaySquared
     return false if x < 0
     t = rayDistanceClosestToCenter - Math.sqrt(x)
-    console.rlog "halfChordDistance=" + t
+    #console.rlog "halfChordDistance=" + t
     t
 
 class Ray
@@ -134,32 +139,51 @@ class RayTracer
 
   trace: () ->
     # 1. shoot a ray determined from the camera parameters and the pixel position in the image
-    ray = this.castRay()
-
     # 2. intersect the ray to scene elements and determine the closest one
+    # 3. check if the intersection point is illuminated by each light source
+    # 4. shade the intersection point using the meterial attributes and the lightings
+    # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
+
+    ray = this.castRay()
+    c = new Color(0, 0, 0)
+    c = this.traceRec(ray, c, 10)
+    @color.setElements(c.toArray())
+
+  traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
 
-    c = new Color(0, 0, 0)
     if intersection
       pos = intersection[0]
       obj = intersection[1]
 
       globalAmbient = @scene.globalAmbient
       globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
-      c = c.add(globalAmbientColor)
+      color = color.add(globalAmbientColor)
 
       for light in @scene.lights
-        c = c.add(this.illuminate(pos, obj, ray, light))
+        color = color.add(this.illuminate(pos, obj, ray, light))
 
-    @color.setElements(c.toArray())
+      return color if times <= 0
 
-    # 3. check if the intersection point is illuminated by each light source
+      nv = obj.norm(pos)
+      w = ray.line.direction
+      wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
+      ks = obj.reflectionProperties.specularColor
 
-    # 4. shade the intersection point using the meterial attributes and the lightings
-    # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
+      specularReflection = this.traceRec(new Ray($L(pos, wr)), new Color(0,0,0), times - 1)
+      #console.rlog specularReflection.val.elements[0]
+      #console.rlog specularReflection.val.elements[1]
+      #console.rlog specularReflection.val.elements[2]
+      specularReflection = specularReflection.multiplyColor(ks)
+      color = color.add(specularReflection) #.add(specularRefraction)
+
+
+    color
+
 
 
   illuminate: (pos, obj, ray, light) ->
+
     nv = obj.norm(pos)
 
     w = ray.line.direction
@@ -182,8 +206,7 @@ class RayTracer
     spepcularIntensity = 0 if frac < 0
     specularHighlights = ks.multiply(spepcularIntensity)
 
-    ambientColor.add(diffuse).add(specularHighlights) #.add(specularReflection).add(specularRefraction)
-
+    ambientColor.add(diffuse).add(specularHighlights)
 
 
   castRay: () ->
@@ -201,14 +224,17 @@ class RayTracer
 # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
 this.loadScene = () ->
   fieldOfView = 40 / 180 * Math.PI
-  camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, 800, 600)
+  camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 
+  #scene = new Scene(camera, 0.2)
   scene = new Scene(camera, 0.2)
   scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)))
   #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
+  #scene.addLight(new Light(new Color(1, 1, 1), $V([10, 5, 10]), new LightIntensity(0, 1, 1)))
 
   scene.addObject(new Sphere($V([0, 0, 0]), 2,
     new ReflectionProperty(
+      #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
       new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32)))
 
   scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,

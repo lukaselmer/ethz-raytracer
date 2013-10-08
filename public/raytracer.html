@@ -26,7 +26,8 @@
 	<!-- DO NOT change the code AFTER this point unless you know what you are doing -->
 	<script type="text/javascript">
 				
-		var width = 800, height = 600; // image size
+		var width = RayConfig.width, height = RayConfig.width; // image size
+
 		var canv, ctx, imgData; // canvas
 		var imgBuffer; // canvas buffer
 		var pixBuffer; // color pixel buffer
@@ -35,6 +36,12 @@
 		
 		// initialization when page loads
 		function load() {
+            document.getElementById("mainContent").style.width = RayConfig.width + "px";
+            document.getElementById("myCanvasDiv").style.width = RayConfig.width + "px";
+            document.getElementById("myCanvasDiv").style.height = RayConfig.height + "px";
+            document.getElementById("myCanvas").width = RayConfig.width
+            document.getElementById("myCanvas").height = RayConfig.height
+
 			canv = document.getElementById("myCanvas");
 			ctx = canv.getContext("2d");
 			imgData = ctx.createImageData(width,height);
@@ -114,7 +121,7 @@
 			var data = canv.toDataURL("image/png");
 			data = data.replace("image/png", "image/octet-stream");
 			document.getElementById("exportLink").href = data;
-			document.getElementById("exportLink").download = "cg-exN-myname-moduleid.png";
+			document.getElementById("exportLink").download = "cg-exN-lukaselmer-moduleid.png";
 			document.getElementById("exportLink").click();
 		}
 		
@@ -139,8 +146,9 @@
 </head>
 
 <body onload="load()">
+    <div><button onclick="exportPNG()" style="width: 396px; height: 40px;">Export</button></div>
 
-	<div style="width: 800px; margin-left: auto; margin-right: auto;">
+	<div id="mainContent" style="margin-left: auto; margin-right: auto;">
 		<div id="myUI" style="text-align:center;">
 			<button onclick="startRendering()" style="width: 396px; height: 40px;">Render</button>
 			
@@ -149,8 +157,8 @@
 			<a id="exportLink" download="" href=""></a>
 		</div>
 
-		<div id="myCanvasDiv" style="width: 800px; height: 600px; border: 1px solid black; margin-top: 10px;">
-			<canvas id="myCanvas" width="800" height="600"></canvas>
+		<div id="myCanvasDiv" style="border: 1px solid black; margin-top: 10px;">
+			<canvas id="myCanvas"></canvas>
 		</div>
 		
 	</div>
