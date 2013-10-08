@@ -252,7 +252,7 @@
       nv = obj.norm(pos);
       w = ray.line.direction;
       wl = light.location.subtract(pos).toUnitVector();
-      wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w);
+      wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
       ambient = light.intensity.ambient;
       ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
       kd = obj.reflectionProperties.diffuseColor;
