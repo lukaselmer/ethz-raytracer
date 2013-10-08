@@ -3,8 +3,8 @@
 # ...
 
 this.RayConfig =
-  width: 400
-  height: 300
+  width: 4000
+  height: 3000
 
 class Color
   constructor: (r, g, b) ->
