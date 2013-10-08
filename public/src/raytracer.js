@@ -253,6 +253,9 @@
       w = ray.line.direction;
       wl = light.location.subtract(pos).toUnitVector();
       wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
+      if (this.scene.intersections(new Ray($L(pos, wl))).length > 0) {
+        return new Color(0, 0, 0);
+      }
       ambient = light.intensity.ambient;
       ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
       kd = obj.reflectionProperties.diffuseColor;
