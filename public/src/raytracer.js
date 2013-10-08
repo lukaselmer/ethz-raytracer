@@ -4,6 +4,24 @@
 
   Color = (function() {
     function Color(r, g, b) {
+      if (r < 0) {
+        r = 0;
+      }
+      if (g < 0) {
+        g = 0;
+      }
+      if (b < 0) {
+        b = 0;
+      }
+      if (r > 1) {
+        r = 1;
+      }
+      if (g > 1) {
+        g = 1;
+      }
+      if (b > 1) {
+        b = 1;
+      }
       this.val = $V([r, g, b]);
     }
 
@@ -16,6 +34,10 @@
       color.val;
       v = this.val.add(color.val);
       return new Color(v.elements[0], v.elements[1], v.elements[2]);
+    };
+
+    Color.prototype.multiply = function(scale) {
+      return new Color(this.val.elements[0] * scale, this.val.elements[1] * scale, this.val.elements[2] * scale);
     };
 
     return Color;
@@ -51,11 +73,12 @@
       min = Infinity;
       ret = null;
       this.objects.forEach(function(object) {
-        var i;
+        var i, intersectionPoint;
         i = object.intersects(ray);
         if (i && i < min) {
           min = i;
-          return ret = object;
+          intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+          return ret = [intersectionPoint, object];
         }
       });
       return ret;
@@ -141,6 +164,10 @@
       this.radiusSquared = this.radius * this.radius;
     }
 
+    Sphere.prototype.norm = function(intersectionPoint) {
+      return intersectionPoint.subtract(this.center).toUnitVector();
+    };
+
     Sphere.prototype.intersects = function(ray) {
       var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t, x;
       console.setRlog();
@@ -195,15 +222,41 @@
     }
 
     RayTracer.prototype.trace = function() {
-      var c, intersection, ray;
+      var c, intersection, obj, pos, ray;
       ray = this.castRay();
       intersection = this.scene.firstIntersection(ray);
       c = new Color(0, 0, 0);
       if (intersection) {
-        console.rlog(intersection);
-        c = c.add(intersection.reflectionProperties.ambientColor);
+        console.rlog(intersection[1]);
+        pos = intersection[0];
+        obj = intersection[1];
+        c = this.illuminate(pos, obj, ray);
       }
       return this.color.setElements(c.toArray());
+    };
+
+    RayTracer.prototype.illuminate = function(pos, obj, ray) {
+      var E, ambient, ambientColor, diffuse, frac, globalAmbient, globalAmbientColor, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
+      nv = obj.norm(pos);
+      w = ray.line.direction;
+      wl = this.scene.light.location.subtract(pos).toUnitVector();
+      wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w);
+      globalAmbient = this.scene.light.intensity.globalAmbient;
+      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
+      ambient = this.scene.light.intensity.ambient;
+      ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
+      kd = obj.reflectionProperties.diffuseColor;
+      E = this.scene.light.intensity.diffuse * nv.dot(wl);
+      diffuse = kd.multiply(E * this.scene.light.intensity.diffuse);
+      n = obj.reflectionProperties.specularExponent;
+      ks = obj.reflectionProperties.specularColor;
+      frac = Math.pow(wr.dot(wl), n) / nv.dot(wl);
+      spepcularIntensity = frac * E;
+      if (frac < 0) {
+        spepcularIntensity = 0;
+      }
+      specularHighlights = ks.multiply(spepcularIntensity);
+      return globalAmbientColor.add(ambientColor).add(diffuse).add(specularHighlights);
     };
 
     RayTracer.prototype.castRay = function() {
