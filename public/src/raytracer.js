@@ -3,8 +3,8 @@
   var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere;
 
   this.RayConfig = {
-    width: 4000,
-    height: 3000
+    width: 400,
+    height: 300
   };
 
   Color = (function() {
