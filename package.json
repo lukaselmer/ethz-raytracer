@@ -1,0 +1,29 @@
+{
+  "name": "ethz-raytracer",
+  "version": "0.0.0",
+  "description": "ethz-raytracer ==============",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lukaselmer/ethz-raytracer.git"
+  },
+  "author": "lukas.elmer@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lukaselmer/ethz-raytracer/issues"
+  },
+  "devDependencies": {
+    "grunt-cli": "~0.1.9",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-uglify": "~0.2.4",
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-qunit": "~0.3.0",
+    "coffee": "0.0.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-coffee": "~0.7.0"
+  }
+}
