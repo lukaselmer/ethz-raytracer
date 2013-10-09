@@ -5,6 +5,8 @@
 this.RayConfig =
   width: 400
   height: 300
+  illumination: true
+  reflection: true
 
 class Color
   constructor: (r, g, b) ->
@@ -86,7 +88,7 @@ class LightIntensity
 
 
 class ReflectionProperty
-  constructor: (@ambientColor, @diffuseColor, @specularColor, @specularExponent) ->
+  constructor: (@ambientColor, @diffuseColor, @specularColor, @specularExponent, @refractionIndex) ->
 
 
 class Sphere
@@ -132,7 +134,7 @@ class Sphere
     t
 
 class Ray
-  constructor: (@line) ->
+  constructor: (@line, @refraction, @power) ->
 
 class RayTracer
   constructor: (@color, @pixelX, @pixelY, @scene) ->
@@ -160,26 +162,24 @@ class RayTracer
       globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
       color = color.add(globalAmbientColor)
 
-      for light in @scene.lights
-        color = color.add(this.illuminate(pos, obj, ray, light))
+      if RayConfig.illumination
+        for light in @scene.lights
+          color = color.add(this.illuminate(pos, obj, ray, light))
 
       return color if times <= 0
 
-      nv = obj.norm(pos)
-      w = ray.line.direction
-      wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
-      ks = obj.reflectionProperties.specularColor
-
-      specularReflection = this.traceRec(new Ray($L(pos, wr)), new Color(0,0,0), times - 1)
-      #console.rlog specularReflection.val.elements[0]
-      #console.rlog specularReflection.val.elements[1]
-      #console.rlog specularReflection.val.elements[2]
-      specularReflection = specularReflection.multiplyColor(ks)
-      color = color.add(specularReflection) #.add(specularRefraction)
-
-
+      color = color.add(this.reflect(pos, obj, ray, times)) if RayConfig.reflection
     color
 
+  reflect: (pos, obj, ray, times) ->
+    nv = obj.norm(pos)
+    w = ray.line.direction
+    wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
+    ks = obj.reflectionProperties.specularColor
+
+    specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0,0,0), times - 1)
+    specularReflection = specularReflection.multiplyColor(ks)
+    specularReflection
 
 
   illuminate: (pos, obj, ray, light) ->
@@ -190,7 +190,7 @@ class RayTracer
     wl = light.location.subtract(pos).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
-    return new Color(0,0,0) if @scene.intersections(new Ray($L(pos, wl))).length > 0
+    return new Color(0,0,0) if @scene.intersections(new Ray($L(pos, wl), 1, 1)).length > 0
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
@@ -218,7 +218,7 @@ class RayTracer
     rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
       camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
-    new Ray($L(camera.position, rayDirection))
+    new Ray($L(camera.position, rayDirection), 1, 1)
 
 
 # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
@@ -236,11 +236,11 @@ this.loadScene = () ->
   scene.addObject(new Sphere($V([0, 0, 0]), 2,
     new ReflectionProperty(
       #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
-      new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32)))
+      new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)))
 
   scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
     new ReflectionProperty(
-      new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16)))
+      new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
   this.scene = scene
 

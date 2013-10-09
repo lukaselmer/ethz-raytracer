@@ -4,7 +4,9 @@
 
   this.RayConfig = {
     width: 400,
-    height: 300
+    height: 300,
+    illumination: true,
+    reflection: true
   };
 
   Color = (function() {
@@ -160,11 +162,12 @@
   })();
 
   ReflectionProperty = (function() {
-    function ReflectionProperty(ambientColor, diffuseColor, specularColor, specularExponent) {
+    function ReflectionProperty(ambientColor, diffuseColor, specularColor, specularExponent, refractionIndex) {
       this.ambientColor = ambientColor;
       this.diffuseColor = diffuseColor;
       this.specularColor = specularColor;
       this.specularExponent = specularExponent;
+      this.refractionIndex = refractionIndex;
     }
 
     return ReflectionProperty;
@@ -212,8 +215,10 @@
   })();
 
   Ray = (function() {
-    function Ray(line) {
+    function Ray(line, refraction, power) {
       this.line = line;
+      this.refraction = refraction;
+      this.power = power;
     }
 
     return Ray;
@@ -237,7 +242,7 @@
     };
 
     RayTracer.prototype.traceRec = function(ray, color, times) {
-      var globalAmbient, globalAmbientColor, intersection, ks, light, nv, obj, pos, specularReflection, w, wr, _i, _len, _ref;
+      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref;
       intersection = this.scene.firstIntersection(ray);
       if (intersection) {
         pos = intersection[0];
@@ -245,23 +250,32 @@
         globalAmbient = this.scene.globalAmbient;
         globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
         color = color.add(globalAmbientColor);
-        _ref = this.scene.lights;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          light = _ref[_i];
-          color = color.add(this.illuminate(pos, obj, ray, light));
+        if (RayConfig.illumination) {
+          _ref = this.scene.lights;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            light = _ref[_i];
+            color = color.add(this.illuminate(pos, obj, ray, light));
+          }
         }
         if (times <= 0) {
           return color;
         }
-        nv = obj.norm(pos);
-        w = ray.line.direction;
-        wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1);
-        ks = obj.reflectionProperties.specularColor;
-        specularReflection = this.traceRec(new Ray($L(pos, wr)), new Color(0, 0, 0), times - 1);
-        specularReflection = specularReflection.multiplyColor(ks);
-        color = color.add(specularReflection);
+        if (RayConfig.reflection) {
+          color = color.add(this.reflect(pos, obj, ray, times));
+        }
       }
       return color;
+    };
+
+    RayTracer.prototype.reflect = function(pos, obj, ray, times) {
+      var ks, nv, specularReflection, w, wr;
+      nv = obj.norm(pos);
+      w = ray.line.direction;
+      wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1);
+      ks = obj.reflectionProperties.specularColor;
+      specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0, 0, 0), times - 1);
+      specularReflection = specularReflection.multiplyColor(ks);
+      return specularReflection;
     };
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
@@ -270,7 +284,7 @@
       w = ray.line.direction;
       wl = light.location.subtract(pos).toUnitVector();
       wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
-      if (this.scene.intersections(new Ray($L(pos, wl))).length > 0) {
+      if (this.scene.intersections(new Ray($L(pos, wl), 1, 1)).length > 0) {
         return new Color(0, 0, 0);
       }
       ambient = light.intensity.ambient;
@@ -295,7 +309,7 @@
       centerPixelX = (this.pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight;
       centerPixelY = (-this.pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth;
       rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(camera.rightDirection.multiply(centerPixelY)).subtract(camera.position);
-      return new Ray($L(camera.position, rayDirection));
+      return new Ray($L(camera.position, rayDirection), 1, 1);
     };
 
     return RayTracer;
@@ -308,8 +322,8 @@
     camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height);
     scene = new Scene(camera, 0.2);
     scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
-    scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32)));
-    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16)));
+    scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
     return this.scene = scene;
   };
 
