@@ -9,7 +9,7 @@ class RayTracer
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
     ray = this.castRay()
     c = new Color(0, 0, 0)
-    c = this.traceRec(ray, c, 10)
+    c = this.traceRec(ray, c, RayConfig.recDepth)
     @color.setElements(c.toArray())
 
   traceRec: (ray, color, times) ->

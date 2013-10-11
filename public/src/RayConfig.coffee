@@ -1,6 +1,6 @@
 this.RayConfig =
-  width: 400
-  height: 300
+  width: 600
+  height: 800
   illumination: true
   reflection: true
-
+  recDepth: 10

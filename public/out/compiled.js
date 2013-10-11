@@ -150,10 +150,11 @@
   })();
 
   this.RayConfig = {
-    width: 400,
-    height: 300,
+    width: 600,
+    height: 800,
     illumination: true,
-    reflection: true
+    reflection: true,
+    recDepth: 10
   };
 
   RayTracer = (function() {
@@ -168,7 +169,7 @@
       var c, ray;
       ray = this.castRay();
       c = new Color(0, 0, 0);
-      c = this.traceRec(ray, c, 10);
+      c = this.traceRec(ray, c, RayConfig.recDepth);
       return this.color.setElements(c.toArray());
     };
 
