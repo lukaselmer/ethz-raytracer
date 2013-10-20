@@ -1,5 +1,5 @@
 (function() {
-  var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere;
+  var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere, _ref;
 
   Camera = (function() {
     function Camera(position, direction, upDirection, distance, fieldOfView, width, height) {
@@ -78,6 +78,10 @@
       return this.val.dup().elements;
     };
 
+    Color.prototype.toVector = function() {
+      return this.val.dup();
+    };
+
     return Color;
 
   })();
@@ -137,6 +141,9 @@
     height: 800,
     illumination: true,
     reflection: true,
+    antialiasing: (_ref = ModuleId.B2) != null ? _ref : {
+      4: 1
+    },
     recDepth: 10
   };
 
@@ -149,15 +156,25 @@
     }
 
     RayTracer.prototype.trace = function() {
-      var c, ray;
-      ray = this.castRay();
-      c = new Color(0, 0, 0);
-      c = this.traceRec(ray, c, RayConfig.recDepth);
-      return this.color.setElements(c.toArray());
+      var averageColorVector, colors, rays, traceRay,
+        _this = this;
+      rays = this.castRays(RayConfig.antialiasing);
+      traceRay = function(ray) {
+        return _this.traceRec(ray, new Color(0, 0, 0), RayConfig.recDepth);
+      };
+      colors = rays.map(function(ray) {
+        return traceRay(ray);
+      });
+      averageColorVector = colors.map(function(c) {
+        return c.toVector();
+      }).reduce(function(previous, current) {
+        return previous.add(current);
+      }).multiply(1 / colors.length);
+      return this.color.setElements(averageColorVector.elements);
     };
 
     RayTracer.prototype.traceRec = function(ray, color, times) {
-      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref;
+      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref1;
       intersection = this.scene.firstIntersection(ray);
       if (intersection) {
         pos = intersection[0];
@@ -166,9 +183,9 @@
         globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
         color = color.add(globalAmbientColor);
         if (RayConfig.illumination) {
-          _ref = this.scene.lights;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            light = _ref[_i];
+          _ref1 = this.scene.lights;
+          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            light = _ref1[_i];
             color = color.add(this.illuminate(pos, obj, ray, light));
           }
         }
@@ -218,13 +235,32 @@
       return ambientColor.add(diffuse).add(specularHighlights);
     };
 
-    RayTracer.prototype.castRay = function() {
-      var camera, centerPixelX, centerPixelY, rayDirection;
+    RayTracer.prototype.castRays = function(antialiasing) {
+      var camera, h, w, _i, _results,
+        _this = this;
       camera = this.scene.camera;
-      centerPixelX = (this.pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight;
-      centerPixelY = (-this.pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth;
-      rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(camera.rightDirection.multiply(centerPixelY)).subtract(camera.position);
-      return new Ray($L(camera.position, rayDirection), 1, 1);
+      w = camera.width * antialiasing;
+      h = camera.height * antialiasing;
+      return (function() {
+        _results = [];
+        for (var _i = 1; 1 <= antialiasing ? _i <= antialiasing : _i >= antialiasing; 1 <= antialiasing ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this).map(function(i) {
+        var _i, _results;
+        return (function() {
+          _results = [];
+          for (var _i = 1; 1 <= antialiasing ? _i <= antialiasing : _i >= antialiasing; 1 <= antialiasing ? _i++ : _i--){ _results.push(_i); }
+          return _results;
+        }).apply(this).map(function(j) {
+          var centerPixelX, centerPixelY, rayDirection;
+          centerPixelX = (_this.pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight;
+          centerPixelY = (-_this.pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth;
+          rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(camera.rightDirection.multiply(centerPixelY)).subtract(camera.position);
+          return new Ray($L(camera.position, rayDirection), 1, 1);
+        });
+      }).reduce(function(a, b) {
+        return a.concat(b);
+      });
     };
 
     return RayTracer;
@@ -261,11 +297,11 @@
     };
 
     Scene.prototype.intersections = function(ray) {
-      var object, _i, _len, _ref, _results;
-      _ref = this.objects;
+      var object, _i, _len, _ref1, _results;
+      _ref1 = this.objects;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        object = _ref[_i];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        object = _ref1[_i];
         if (object.intersects(ray)) {
           _results.push(object);
         }

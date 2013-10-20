@@ -7,10 +7,16 @@ class RayTracer
     # 3. check if the intersection point is illuminated by each light source
     # 4. shade the intersection point using the meterial attributes and the lightings
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
-    ray = this.castRay()
-    c = new Color(0, 0, 0)
-    c = this.traceRec(ray, c, RayConfig.recDepth)
-    @color.setElements(c.toArray())
+    rays = this.castRays(RayConfig.antialiasing)
+
+    traceRay = (ray) =>
+      this.traceRec(ray, new Color(0, 0, 0), RayConfig.recDepth)
+
+    colors = rays.map (ray) ->
+      traceRay(ray)
+
+    averageColorVector = colors.map((c) -> c.toVector()).reduce((previous, current) -> previous.add(current)).multiply(1 / colors.length)
+    @color.setElements(averageColorVector.elements)
 
   traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
@@ -69,13 +75,18 @@ class RayTracer
     ambientColor.add(diffuse).add(specularHighlights)
 
 
-  castRay: () ->
+  castRays: (antialiasing) ->
     camera = @scene.camera
+    w = camera.width * antialiasing
+    h = camera.height * antialiasing
 
-    centerPixelX = (@pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight # + 0.5 for the center of the pixel
-    centerPixelY = (-@pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth # - 0.5 for the center of the pixel
+    [1..antialiasing].map (i) =>
+      [1..antialiasing].map (j) =>
+        centerPixelX = (@pixelX*antialiasing + (i-1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
+        centerPixelY = (-@pixelY*antialiasing - (j-1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
 
-    rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
-      camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
+        rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
+          camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
-    new Ray($L(camera.position, rayDirection), 1, 1)
+        new Ray($L(camera.position, rayDirection), 1, 1)
+    .reduce((a,b) -> a.concat(b))
