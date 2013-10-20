@@ -19,9 +19,9 @@ this.loadScene = () ->
     new ReflectionProperty(
       new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
-  this.scene = scene
+  scene
 
 
-this.trace = (color, pixelX, pixelY) ->
+this.trace = (scene, color, pixelX, pixelY) ->
   rayTracer = new RayTracer(color, pixelX, pixelY, scene)
   rayTracer.trace()

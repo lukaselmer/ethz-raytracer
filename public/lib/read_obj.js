@@ -2,19 +2,19 @@
 // DO NOT change the content of this file except for implementing the computeNormals() function
 // to load a mesh you need to call: var myMesh = readOBJ('./data/mesh.obj');
 
-function readOBJ(path) {
+/*function readOBJ(path) {
 	console.log("Reading OBJ file: " + path);
 	var obj = new Mesh();
 	var req = new XMLHttpRequest();
 	req.open('GET', path, false);
-	
+
 	req.send(null);
 	obj.load(req.response);
 	obj.computeNormals();
 	console.log("OBJ file successfully loaded (nbV: " + obj.nbV() + ", nbF: " + obj.nbF() + ")");
-	
+
 	return obj;
-}
+}*/
 
 
 var Mesh = function() {
@@ -24,12 +24,12 @@ var Mesh = function() {
 };
 
 Mesh.prototype.computeNormals = function() {
-	
+
 	for(var i = 0 ; i < this.nbV() ; ++i) {
 		this.N[i] = $V([0,0,0]);
 	}
 	// TODO for exercise 3
-	
+
 }
 
 Mesh.prototype.nbV = function() { // number of vertices
@@ -39,7 +39,7 @@ Mesh.prototype.nbV = function() { // number of vertices
 Mesh.prototype.nbF = function() { // number of triangles
 	return this.F.length;
 };
-	
+
 Mesh.prototype.load = function (data) {
 
 	// v float float float
@@ -53,7 +53,7 @@ Mesh.prototype.load = function (data) {
 	// f vertex//normal vertex//normal vertex//normal
 	var face_pattern4 = /f( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))/;
 
-	
+
 	var lines = data.split( "\n" );
 
 	for ( var i = 0; i < lines.length; i ++ ) {
@@ -82,7 +82,7 @@ Mesh.prototype.load = function (data) {
 			this.F.push( $V([
 				parseInt( result[ 1 ] ) - 1 ,
 				parseInt( result[ 2 ] ) - 1 ,
-				parseInt( result[ 3 ] ) - 1 
+				parseInt( result[ 3 ] ) - 1
 			]) );
 
 		} else if ( ( result = face_pattern2.exec( line ) ) !== null ) {
@@ -91,7 +91,7 @@ Mesh.prototype.load = function (data) {
 			this.F.push( $V([
 				parseInt( result[ 2 ] ) - 1 ,
 				parseInt( result[ 5 ] ) - 1 ,
-				parseInt( result[ 8 ] ) - 1 
+				parseInt( result[ 8 ] ) - 1
 			]) );
 
 		} else if ( ( result = face_pattern3.exec( line ) ) !== null ) {
@@ -100,7 +100,7 @@ Mesh.prototype.load = function (data) {
 			this.F.push( $V([
 				parseInt( result[ 2 ] ) - 1 ,
 				parseInt( result[ 6 ] ) - 1 ,
-				parseInt( result[ 10 ] ) - 1 
+				parseInt( result[ 10 ] ) - 1
 			]) );
 
 		} else if ( ( result = face_pattern4.exec( line ) ) !== null ) {
@@ -109,13 +109,13 @@ Mesh.prototype.load = function (data) {
 			this.F.push( $V([
 				parseInt( result[ 2 ] ) - 1,
 				parseInt( result[ 5 ] ) - 1,
-				parseInt( result[ 8 ] ) - 1 
+				parseInt( result[ 8 ] ) - 1
 			]) );
 
 		}
 
 	}
-	
+
 };
 
 

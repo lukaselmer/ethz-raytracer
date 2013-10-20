@@ -17,4 +17,3 @@ class Camera
 
   getCenter: () ->
     @position.add(@direction)
-

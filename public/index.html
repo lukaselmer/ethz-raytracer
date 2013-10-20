@@ -1,12 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title></title>
-    <script>
-        document.location = "./raytracer.html";
+    <!--<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <!--<link rel="stylesheet" href="xhttps://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">-->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootswatch/3.0.0/cerulean/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootswatch/3.0.0/spacelab/bootstrap.min.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootswatch/3.0.0/slate/bootstrap.min.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootswatch/3.0.0/cyborg/bootstrap.min.css">-->
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <!-- read the list of module enabled (for example you can use in your code: "if(ModuleId.B3) { ... }") -->
+    <script src="lib/ModuleId.js"></script>
+
+    <!-- simple vector and matrix library (see documentation: http://sylvester.jcoglan.com/) -->
+    <script src="lib/sylvester.src.js"></script>
+
+    <!-- TGA and OBJ loader for exercise 3 -->
+    <script type="text/javascript">
+        var waitingForData = 0; // # of asynchronous loading requests in progress (renderer will wait for them to be done)
     </script>
+    <script src="lib/read_tga.js"></script>
+    <script src="lib/read_obj.js"></script>
+
+    <!-- DO NOT change the code BEFORE this point unless you know what you are doing -->
+
+    <!-- you can include additional script files here if you need -->
+    <!--<script src="src/helpers.js"></script>-->
+    <script src="out/compiled.js"></script>
+
+    <!-- DO NOT change the code AFTER this point unless you know what you are doing -->
+    <script src="lib/startup.js"></script>
 </head>
 <body>
+
+<div class="container">
+    <div class="row">
+
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Raytracer by Lukas Elmer</a>
+            </div>
+
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="#" id="exportButton">Download</a></li>
+                    <li><a href="#" id="renderButton">Render</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div id="mainContent" style="margin-left: auto; margin-right: auto;">
+            <div id="myCanvasDiv"
+                 style="border: 4px solid #000000; border-radius: 10px; box-shadow: 0px 0px 555px 100px #428bca;">
+                <canvas id="myCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

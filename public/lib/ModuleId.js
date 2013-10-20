@@ -1,8 +1,8 @@
 
 // DO NOT CHANGE ANYTHING HERE
 // This function read the variables given in the URL as GET parameters
-// For example if you call raytracer.html?C1 then ModuleId.C1 equals true
-// You can have several module by doing for example raytracer.html?C1&C2
+// For example if you call index.html?C1 then ModuleId.C1 equals true
+// You can have several module by doing for example index.html?C1&C2
 
 var ModuleId = {
 	B1: false, //... specular reflection/refraction and recursive ray tracing

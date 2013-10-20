@@ -19,7 +19,6 @@ class Camera
     @position.add(@direction)
 
 
-
 class Color
   constructor: (r, g, b) ->
     if r instanceof Vector
@@ -42,13 +41,6 @@ class Color
   toArray: ->
     @val.dup().elements
 
-
-### Random log ###
-console.setRlog = (p = 0.0001) ->
-  @shoulLog = Math.random() <= p
-console.rlog = (msg) ->
-  return unless @shoulLog
-  console.log(msg)
 
 class Light
   constructor: (@color, @location, @intensity) ->
@@ -79,10 +71,10 @@ this.loadScene = () ->
     new ReflectionProperty(
       new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
-  this.scene = scene
+  scene
 
 
-this.trace = (color, pixelX, pixelY) ->
+this.trace = (scene, color, pixelX, pixelY) ->
   rayTracer = new RayTracer(color, pixelX, pixelY, scene)
   rayTracer.trace()
 
@@ -168,7 +160,7 @@ class RayTracer
 
 
   castRay: () ->
-    camera = scene.camera
+    camera = @scene.camera
 
     centerPixelX = (@pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight # + 0.5 for the center of the pixel
     centerPixelY = (-@pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth # - 0.5 for the center of the pixel
@@ -248,3 +240,10 @@ class Sphere
     t = rayDistanceClosestToCenter - Math.sqrt(x)
     #console.rlog "halfChordDistance=" + t
     t
+
+### Random log ###
+console.setRlog = (p = 0.0001) ->
+  @shoulLog = Math.random() <= p
+console.rlog = (msg) ->
+  return unless @shoulLog
+  console.log(msg)

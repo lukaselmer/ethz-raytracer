@@ -70,7 +70,7 @@ class RayTracer
 
 
   castRay: () ->
-    camera = scene.camera
+    camera = @scene.camera
 
     centerPixelX = (@pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight # + 0.5 for the center of the pixel
     centerPixelY = (-@pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth # - 0.5 for the center of the pixel

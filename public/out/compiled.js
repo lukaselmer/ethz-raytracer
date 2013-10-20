@@ -82,23 +82,6 @@
 
   })();
 
-  /* Random log*/
-
-
-  console.setRlog = function(p) {
-    if (p == null) {
-      p = 0.0001;
-    }
-    return this.shoulLog = Math.random() <= p;
-  };
-
-  console.rlog = function(msg) {
-    if (!this.shoulLog) {
-      return;
-    }
-    return console.log(msg);
-  };
-
   Light = (function() {
     function Light(color, location, intensity) {
       this.color = color;
@@ -129,10 +112,10 @@
     scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
     scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
     scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
-    return this.scene = scene;
+    return scene;
   };
 
-  this.trace = function(color, pixelX, pixelY) {
+  this.trace = function(scene, color, pixelX, pixelY) {
     var rayTracer;
     rayTracer = new RayTracer(color, pixelX, pixelY, scene);
     return rayTracer.trace();
@@ -237,7 +220,7 @@
 
     RayTracer.prototype.castRay = function() {
       var camera, centerPixelX, centerPixelY, rayDirection;
-      camera = scene.camera;
+      camera = this.scene.camera;
       centerPixelX = (this.pixelX + 0.5 - camera.width / 2) / camera.height * camera.imagePaneHeight;
       centerPixelY = (-this.pixelY - 0.5 + camera.height / 2) / camera.width * camera.imagePaneWidth;
       rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(camera.rightDirection.multiply(centerPixelY)).subtract(camera.position);
@@ -349,6 +332,23 @@
     return Sphere;
 
   })();
+
+  /* Random log*/
+
+
+  console.setRlog = function(p) {
+    if (p == null) {
+      p = 0.0001;
+    }
+    return this.shoulLog = Math.random() <= p;
+  };
+
+  console.rlog = function(msg) {
+    if (!this.shoulLog) {
+      return;
+    }
+    return console.log(msg);
+  };
 
 }).call(this);
 
