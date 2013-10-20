@@ -1,3 +1,4 @@
+"use strict";
 
 // DO NOT CHANGE ANYTHING HERE
 // This function read the variables given in the URL as GET parameters
@@ -18,18 +19,7 @@ var ModuleId = {
 
 if(document.location.toString().indexOf('?') != -1) {
     var query = document.location.toString().replace(/^.*?\?/,'').split('&');
-
-    for(var i=0 ; i < query.length ; i++) {
-		switch(query[i]) {
-			case "B1": ModuleId.B1 = true; break;
-			case "B2": ModuleId.B2 = true; break;
-			case "B3": ModuleId.B3 = true; break;
-			case "B4": ModuleId.B4 = true; break;
-			case "C1": ModuleId.C1 = true; break;
-			case "C2": ModuleId.C2 = true; break;
-			case "C3": ModuleId.C3 = true; break;
-			case "D1": ModuleId.D1 = true; break;
-			case "D2": ModuleId.D2 = true; break;
-		}
-    }
+    query.forEach(function(q){
+        ModuleId[q] = true;
+    });
 }
