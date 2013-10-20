@@ -45,7 +45,9 @@
         curPixelY = 0; // reset next pixel to be rendered
         var scene = loadScene(); // load the scene
         refresh();
-        setTimeout(function(){render(scene);}, 0); // render
+        setTimeout(function () {
+            render(scene);
+        }, 0); // render
     }
 
     // reset all the pixel to white color
@@ -75,7 +77,9 @@
         if (curPixelY == height) return; // rendering done
         if (waitingForData > 0) { // textures are not loaded yet, wait for them
             console.log("Some data are not loaded yet, waiting for them before starting to render");
-            setTimeout(function(){render(scene);}, 1000);
+            setTimeout(function () {
+                render(scene);
+            }, 1000);
             return;
         }
 
@@ -97,7 +101,9 @@
         refresh(); // update screen
 
         // call render as soon as possible to compute next pixel values
-        setTimeout(function(){render(scene);}, 0);
+        setTimeout(function () {
+            render(scene);
+        }, 0);
     }
 
     // export the canvas in a PNG file
