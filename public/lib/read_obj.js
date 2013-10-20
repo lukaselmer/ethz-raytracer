@@ -1,3 +1,4 @@
+"use strict";
 
 // DO NOT change the content of this file except for implementing the computeNormals() function
 // to load a mesh you need to call: var myMesh = readOBJ('./data/mesh.obj');

@@ -1,5 +1,5 @@
 (function() {
-  var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere, _ref;
+  var Camera, Color, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, Sphere;
 
   Camera = (function() {
     function Camera(position, direction, upDirection, distance, fieldOfView, width, height) {
@@ -141,9 +141,7 @@
     height: 800,
     illumination: true,
     reflection: true,
-    antialiasing: (_ref = ModuleId.B2) != null ? _ref : {
-      4: 1
-    },
+    antialiasing: ModuleId.B2 ? 4 : 1,
     recDepth: 10
   };
 
@@ -174,7 +172,7 @@
     };
 
     RayTracer.prototype.traceRec = function(ray, color, times) {
-      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref1;
+      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref;
       intersection = this.scene.firstIntersection(ray);
       if (intersection) {
         pos = intersection[0];
@@ -183,9 +181,9 @@
         globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
         color = color.add(globalAmbientColor);
         if (RayConfig.illumination) {
-          _ref1 = this.scene.lights;
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            light = _ref1[_i];
+          _ref = this.scene.lights;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            light = _ref[_i];
             color = color.add(this.illuminate(pos, obj, ray, light));
           }
         }
@@ -297,11 +295,11 @@
     };
 
     Scene.prototype.intersections = function(ray) {
-      var object, _i, _len, _ref1, _results;
-      _ref1 = this.objects;
+      var object, _i, _len, _ref, _results;
+      _ref = this.objects;
       _results = [];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        object = _ref1[_i];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        object = _ref[_i];
         if (object.intersects(ray)) {
           _results.push(object);
         }

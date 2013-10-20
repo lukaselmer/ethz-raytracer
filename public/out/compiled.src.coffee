@@ -18,7 +18,6 @@ class Camera
   getCenter: () ->
     @position.add(@direction)
 
-
 class Color
   constructor: (r, g, b) ->
     if r instanceof Vector
@@ -37,7 +36,8 @@ class Color
   multiply: (scale) ->
     new Color(@val.multiply(scale))
   multiplyColor: (color) ->
-    new Color(@val.elements[0] * color.val.elements[0], @val.elements[1] * color.val.elements[1], @val.elements[2] * color.val.elements[2])
+    new Color(@val.elements[0] * color.val.elements[0], @val.elements[1] * color.val.elements[1],
+      @val.elements[2] * color.val.elements[2])
   toArray: ->
     @val.dup().elements
   toVector: ->
@@ -88,7 +88,7 @@ this.RayConfig =
   height: 800
   illumination: true
   reflection: true
-  antialiasing: ModuleId.B2 ? 4 : 1
+  antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
   recDepth: 10
 
 class RayTracer
@@ -108,7 +108,9 @@ class RayTracer
     colors = rays.map (ray) ->
       traceRay(ray)
 
-    averageColorVector = colors.map((c) -> c.toVector()).reduce((previous, current) -> previous.add(current)).multiply(1 / colors.length)
+    averageColorVector = colors.map((c) ->
+      c.toVector()).reduce((previous, current) ->
+      previous.add(current)).multiply(1 / colors.length)
     @color.setElements(averageColorVector.elements)
 
   traceRec: (ray, color, times) ->
@@ -175,14 +177,15 @@ class RayTracer
 
     [1..antialiasing].map (i) =>
       [1..antialiasing].map (j) =>
-        centerPixelX = (@pixelX*antialiasing + (i-1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
-        centerPixelY = (-@pixelY*antialiasing - (j-1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
+        centerPixelX = (@pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
+        centerPixelY = (-@pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
 
         rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
           camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
         new Ray($L(camera.position, rayDirection), 1, 1)
-    .reduce((a,b) -> a.concat(b))
+    .reduce((a, b) ->
+        a.concat(b))
 
 class ReflectionProperty
   constructor: (@ambientColor, @diffuseColor, @specularColor, @specularExponent, @refractionIndex) ->

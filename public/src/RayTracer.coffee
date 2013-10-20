@@ -15,7 +15,9 @@ class RayTracer
     colors = rays.map (ray) ->
       traceRay(ray)
 
-    averageColorVector = colors.map((c) -> c.toVector()).reduce((previous, current) -> previous.add(current)).multiply(1 / colors.length)
+    averageColorVector = colors.map((c) ->
+      c.toVector()).reduce((previous, current) ->
+      previous.add(current)).multiply(1 / colors.length)
     @color.setElements(averageColorVector.elements)
 
   traceRec: (ray, color, times) ->
@@ -82,11 +84,12 @@ class RayTracer
 
     [1..antialiasing].map (i) =>
       [1..antialiasing].map (j) =>
-        centerPixelX = (@pixelX*antialiasing + (i-1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
-        centerPixelY = (-@pixelY*antialiasing - (j-1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
+        centerPixelX = (@pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
+        centerPixelY = (-@pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
 
         rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
           camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
         new Ray($L(camera.position, rayDirection), 1, 1)
-    .reduce((a,b) -> a.concat(b))
+    .reduce((a, b) ->
+        a.concat(b))

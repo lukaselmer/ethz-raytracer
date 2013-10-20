@@ -3,5 +3,5 @@ this.RayConfig =
   height: 800
   illumination: true
   reflection: true
-  antialiasing: ModuleId.B2 ? 4 : 1
+  antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
   recDepth: 10

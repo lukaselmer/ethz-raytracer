@@ -1,3 +1,4 @@
+"use strict";
 
 // DO NOT modify this file if you don't know what you are doing
 
@@ -8,7 +9,7 @@
 		height in #pixels: myTexture.header.height
 		width in #pixels: myTexture.header.width
 		array of colors: myTexture.image (stored like this: [b, g, r, b, g, r, ...] row-by-row with values between 0 and 255
-		
+
 		Access example:
 		var id = 3 * (col * myTexture.header.width + row);
 
@@ -24,7 +25,7 @@ function readTGA(path) {
 	waitingForData++;
 	req.open('GET', path, true);
 	req.responseType = 'arraybuffer';
-	
+
 	req.onload = function(e) {
 		if (this.status === 200) {
 			tga.load(new Uint8Array(req.response));
@@ -33,7 +34,7 @@ function readTGA(path) {
 		}
 	};
 	req.send(null);
-	
+
 	return tga;
 }
 
@@ -53,12 +54,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -82,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			// Browser
 			shim.exports = typeof (window) !== 'undefined' ? window : _global;
 		}
-	} 
+	}
 	else {
 		// Commonjs
 		shim.exports = exports;
@@ -109,7 +110,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 		Targa.TYPE_RLE_INDEXED = 9;
 		Targa.TYPE_RLE_RGB     = 10;
 		Targa.TYPE_RLE_GREY    = 11;
-		
+
 		Targa.ORIGIN_MASK      = 0x30;
 		Targa.ORIGIN_SHIFT     = 0x04;
 		Targa.ORIGIN_BL        = 0x00;
@@ -127,7 +128,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var req, _this = this;
 			req = new XMLHttpRequest();
 			req.responseType = 'arraybuffer';
-			
+
 			req.open('GET', path, true);
 			req.onload = function(e) {
 				if (this.status === 200) {
@@ -137,7 +138,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			};
 			req.send(null);
 		};
-		
+
 		/**
 		 * Load and parse a TGA file
 		 *
@@ -158,7 +159,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 				colormap_length: data[this.offset++] | data[this.offset++] << 8,
 				colormap_size:   data[this.offset++],
 				origin: [
-					data[this.offset++] | data[this.offset++] << 8, 
+					data[this.offset++] | data[this.offset++] << 8,
 					data[this.offset++] | data[this.offset++] << 8
 				],
 				width:      data[this.offset++] | data[this.offset++] << 8,
@@ -183,20 +184,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 				case Targa.TYPE_INDEXED:
 					this.use_pal = true;
 					break;
-				
+
 				case Targa.TYPE_RLE_RGB:
 					this.use_rle = true;
 				case Targa.TYPE_RGB:
 					this.use_rgb = true;
 					break;
-				
+
 				case Targa.TYPE_RLE_GREY:
 					this.use_rle = true;
 				case Targa.TYPE_GREY:
 					this.use_grey = true;
 					break;
 			}
-			
+
 			this.parse(data);
 		};
 
@@ -240,9 +241,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			}
 
 			// Check pixel size
-			if (this.header.pixel_size !== 8 
-			 && this.header.pixel_size !== 16 
-			 && this.header.pixel_size !== 24 
+			if (this.header.pixel_size !== 8
+			 && this.header.pixel_size !== 16
+			 && this.header.pixel_size !== 24
 			 && this.header.pixel_size !== 32) {
 				throw new Error("Targa::checkHeader() - Invalid pixel size '" + this.header.pixel_size + "'");
 			}
@@ -254,12 +255,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 		 * @param {Uint8Array} data - Binary data of the TGA file
 		 */
 		Targa.prototype.parse = function Targa_parse(data) {
-			var _header, 
-			    numAlphaBits, 
-			    pixel_data, 
-			    pixel_size, 
+			var _header,
+			    numAlphaBits,
+			    pixel_data,
+			    pixel_size,
 			    pixel_total;
-			
+
 			_header      = this.header;
 			numAlphaBits = _header.flags & 0xf;
 			pixel_size   = _header.pixel_size >> 3;
@@ -268,7 +269,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			// Read palettes
 			if (this.use_pal) {
 				this.palettes = data.subarray(
-				this.offset, 
+				this.offset,
 				this.offset += _header.colormap_length * pixel_size
 				);
 			}
@@ -276,11 +277,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			// Read LRE
 			if (this.use_rle) {
 				pixel_data = new Uint8Array(pixel_total);
-				
+
 				var c, count, i;
 				var offset = 0;
 				var pixels = new Uint8Array(pixel_size);
-				
+
 				while (offset < pixel_total) {
 					c     = data[this.offset++];
 					count = (c & 0x7f) + 1;
@@ -296,9 +297,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 						for (i = 0; i < count; ++i) {
 							pixel_data.set(pixels, offset + i * pixel_size);
 						}
-						
+
 						offset += pixel_size * count;
-					} 
+					}
 
 					// Raw pixels.
 					else {
@@ -309,20 +310,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 						offset += count;
 					}
 				}
-			} 
+			}
 
 			// RAW Pixels
 			else {
 				pixel_data = data.subarray(
-					this.offset, 
+					this.offset,
 					this.offset += (
-						this.use_pal 
-							? _header.width * _header.height 
+						this.use_pal
+							? _header.width * _header.height
 							: pixel_total
 					)
 				);
 			}
-			
+
 			this.image = pixel_data;
 		};
 
@@ -333,23 +334,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 		 * @returns {imageData}
 		 */
 		Targa.prototype.getImageData = function Targa_getImageData(imageData) {
-			var width  = this.header.width, 
-			    height = this.header.height, 
-			    x_start, 
-			    y_start, 
-			    x_step, 
-			    y_step, 
-			    y_end, 
-			    x_end, 
-			    func, 
+			var width  = this.header.width,
+			    height = this.header.height,
+			    x_start,
+			    y_start,
+			    x_step,
+			    y_step,
+			    y_end,
+			    x_end,
+			    func,
 			    data;
-			
-			data = 
+
+			data =
 				// sent as argument
-				imageData || 
+				imageData ||
 
 				// In main frame ?
-				(document && document.createElement('canvas').getContext('2d').createImageData(width, height)) || 
+				(document && document.createElement('canvas').getContext('2d').createImageData(width, height)) ||
 
 				// Not have access to document.
 				{
@@ -369,7 +370,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					y_step = 1;
 					y_end = height;
 					break;
-				
+
 				case Targa.ORIGIN_BL:
 					x_start = 0;
 					x_step = 1;
@@ -378,7 +379,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					y_step = -1;
 					y_end = -1;
 					break;
-				
+
 				case Targa.ORIGIN_UR:
 					x_start = width - 1;
 					x_step = -1;
@@ -387,7 +388,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					y_step = 1;
 					y_end = height;
 					break;
-				
+
 				case Targa.ORIGIN_BR:
 					x_start = width - 1;
 					x_step = -1;
@@ -449,7 +450,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image, colormap = this.palettes;
 			var width = this.header.width, height = this.header.height;
 			var color, i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i++) {
 					color = image[i];
@@ -459,7 +460,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 0] = colormap[(color * 3) + 2];
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -479,7 +480,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image;
 			var width = this.header.width, height = this.header.height;
 			var color, i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i += 2) {
 					color = image[i + 0] + (image[i + 1] << 8); // Inversed ?
@@ -489,7 +490,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 3] = (color & 0x8000) ? 0 : 255;
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -509,7 +510,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image;
 			var width = this.header.width, height = this.header.height;
 			var i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i += 3) {
 					imageData[(x + width * y) * 4 + 3] = 255;
@@ -518,7 +519,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 0] = image[i + 2];
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -538,7 +539,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image;
 			var width = this.header.width, height = this.header.height;
 			var i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i += 4) {
 					imageData[(x + width * y) * 4 + 2] = image[i + 0];
@@ -547,7 +548,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 3] = image[i + 3];
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -567,7 +568,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image;
 			var width = this.header.width, height = this.header.height;
 			var color, i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i++) {
 					color = image[i];
@@ -577,7 +578,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 3] = 255;
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -597,7 +598,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 			var image = this.image;
 			var width = this.header.width, height = this.header.height;
 			var i = 0, x, y;
-			
+
 			for (y = y_start; y !== y_end; y += y_step) {
 				for (x = x_start; x !== x_end; x += x_step, i += 2) {
 					imageData[(x + width * y) * 4 + 0] = image[i + 0];
@@ -606,7 +607,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 					imageData[(x + width * y) * 4 + 3] = image[i + 1];
 				}
 			}
-			
+
 			return imageData;
 		};
 
@@ -614,6 +615,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 		if (typeof (exports) !== 'undefined') {
 			exports.TGA = Targa;
 		}
-	
+
 	})(shim.exports);
 })(this);

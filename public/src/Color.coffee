@@ -1,4 +1,3 @@
-
 class Color
   constructor: (r, g, b) ->
     if r instanceof Vector
@@ -17,7 +16,8 @@ class Color
   multiply: (scale) ->
     new Color(@val.multiply(scale))
   multiplyColor: (color) ->
-    new Color(@val.elements[0] * color.val.elements[0], @val.elements[1] * color.val.elements[1], @val.elements[2] * color.val.elements[2])
+    new Color(@val.elements[0] * color.val.elements[0], @val.elements[1] * color.val.elements[1],
+      @val.elements[2] * color.val.elements[2])
   toArray: ->
     @val.dup().elements
   toVector: ->
