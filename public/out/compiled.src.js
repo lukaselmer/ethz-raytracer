@@ -193,7 +193,7 @@ this.initRayConfig = function() {
     width: 600,
     height: 800,
     illumination: true,
-    reflection: true,
+    reflection: ModuleId.B1,
     antialiasing: ModuleId.B2 ? 4 : 1,
     recDepth: 10
   };
