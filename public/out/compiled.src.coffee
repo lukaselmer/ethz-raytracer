@@ -193,21 +193,19 @@ class RayTracer
 
       return color if times <= 0
 
-      color = color.add(this.reflect(pos, obj, ray, times)) if RayConfig.reflection
-      color = color.add(this.refract(pos, obj, ray, times)) if RayConfig.reflection
+      color = color.add(this.reflect_and_refract(pos, obj, ray, times)) if RayConfig.reflection
     color
 
-  reflect: (pos, obj, ray, times) ->
+  reflect_and_refract: (pos, obj, ray, times) ->
     nv = obj.norm(pos)
     w = ray.line.direction
     wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
     ks = obj.reflectionProperties.specularColor
 
-    specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0, 0, 0), times - 1)
+    specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1)
     specularReflection = specularReflection.multiplyColor(ks)
     specularReflection
 
-  refract: (pos, obj, ray, times) ->
 
 
   illuminate: (pos, obj, ray, light) ->
@@ -217,7 +215,7 @@ class RayTracer
     wl = light.location.subtract(pos).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
-    return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), 1, 1)).length > 0
+    return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)

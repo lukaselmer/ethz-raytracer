@@ -254,25 +254,20 @@ RayTracer = (function() {
       if (RayConfig.reflection) {
         color = color.add(this.reflect(pos, obj, ray, times));
       }
-      if (RayConfig.reflection) {
-        color = color.add(this.refract(pos, obj, ray, times));
-      }
     }
     return color;
   };
 
-  RayTracer.prototype.reflect = function(pos, obj, ray, times) {
+  RayTracer.prototype.reflect_and_refract = function(pos, obj, ray, times) {
     var ks, nv, specularReflection, w, wr;
     nv = obj.norm(pos);
     w = ray.line.direction;
     wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1);
     ks = obj.reflectionProperties.specularColor;
-    specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0, 0, 0), times - 1);
+    specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1);
     specularReflection = specularReflection.multiplyColor(ks);
     return specularReflection;
   };
-
-  RayTracer.prototype.refract = function(pos, obj, ray, times) {};
 
   RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
     var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
@@ -280,7 +275,7 @@ RayTracer = (function() {
     w = ray.line.direction;
     wl = light.location.subtract(pos).toUnitVector();
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
-    if (this.scene.intersections(new Ray($L(pos, wl), 1, 1)).length > 0) {
+    if (this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0) {
       return new Color(0, 0, 0);
     }
     ambient = light.intensity.ambient;
