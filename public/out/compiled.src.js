@@ -252,21 +252,66 @@ RayTracer = (function() {
         return color;
       }
       if (RayConfig.reflection) {
-        color = color.add(this.reflect(pos, obj, ray, times));
+        color = color.add(this.reflectAndRefract(pos, obj, ray, times));
       }
     }
     return color;
   };
 
-  RayTracer.prototype.reflect_and_refract = function(pos, obj, ray, times) {
-    var ks, nv, specularReflection, w, wr;
+  RayTracer.prototype.reflectAndRefract = function(pos, obj, ray, times) {
+    var color, reflectPower, reflectedColor, reflectedRay, refractPower, refractedColor, refractedRay, specularReflection, specularRefraction, _ref;
+    _ref = this.specularRays(pos, obj, ray), reflectedRay = _ref[0], refractedRay = _ref[1], reflectPower = _ref[2], refractPower = _ref[3];
+    color = new Color(0, 0, 0);
+    specularReflection = new Color(0, 0, 0);
+    specularRefraction = new Color(0, 0, 0);
+    if (reflectedRay != null) {
+      reflectedColor = this.traceRec(reflectedRay, color, times - 1);
+      specularReflection = reflectedColor.multiplyColor(obj.reflectionProperties.specularColor);
+      color = color.add(specularReflection.multiply(reflectPower));
+    }
+    if (refractedRay != null) {
+      refractedColor = this.traceRec(refractedRay, color, times - 1);
+      specularRefraction = refractedColor.multiplyColor(obj.reflectionProperties.specularColor);
+      color = color.add(specularRefraction.multiply(refractPower));
+    }
+    return color;
+  };
+
+  RayTracer.prototype.specularRays = function(pos, obj, ray) {
+    var cos1, cos2, first, inside, n1, n2, nv, p_reflect, p_refract, ref, reflectPower, reflectedRay, refractPower, refractedRay, underRoot, w, w_dot_nv, wr, wt;
+    inside = ray.refraction !== 1;
     nv = obj.norm(pos);
-    w = ray.line.direction;
-    wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1);
-    ks = obj.reflectionProperties.specularColor;
-    specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1);
-    specularReflection = specularReflection.multiplyColor(ks);
-    return specularReflection;
+    if (inside) {
+      nv = nv.multiply(-1);
+    }
+    w = pos.subtract(ray.line.anchor).toUnitVector();
+    w_dot_nv = w.dot(nv);
+    wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector().multiply(-1);
+    reflectedRay = new Ray($L(pos, wr), ray.refraction, ray.power);
+    if (wr.elements[0] === 0 && wr.elements[0] === 0 && wr.elements[0] === 0) {
+      reflectedRay = null;
+    }
+    refractedRay = null;
+    n1 = ray.refraction;
+    n2 = (inside ? 1 : obj.reflectionProperties.refractionIndex);
+    ref = n1 / n2;
+    reflectPower = 1;
+    refractPower = 0;
+    if (n2 !== Infinity) {
+      first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref);
+      underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv));
+      if (underRoot >= 0) {
+        wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector();
+        refractedRay = new Ray($L(pos, wt), n2, ray.power);
+        cos1 = wr.dot(nv);
+        cos2 = wt.dot(nv.multiply(-1));
+        p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2);
+        p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
+        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract);
+        refractPower = 1 - reflectPower;
+      }
+    }
+    return [reflectedRay, refractedRay, reflectPower, refractPower];
   };
 
   RayTracer.prototype.illuminate = function(pos, obj, ray, light) {

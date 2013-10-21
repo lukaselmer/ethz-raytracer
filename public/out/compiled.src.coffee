@@ -193,19 +193,74 @@ class RayTracer
 
       return color if times <= 0
 
-      color = color.add(this.reflect_and_refract(pos, obj, ray, times)) if RayConfig.reflection
+      color = color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
     color
 
-  reflect_and_refract: (pos, obj, ray, times) ->
+  reflectAndRefract: (pos, obj, ray, times) ->
+    [reflectedRay, refractedRay, reflectPower, refractPower] = this.specularRays(pos, obj, ray)
+    color = new Color(0, 0, 0)
+    specularReflection = new Color(0, 0, 0)
+    specularRefraction = new Color(0, 0, 0)
+    if reflectedRay?
+      reflectedColor = this.traceRec(reflectedRay, color, times - 1)
+      specularReflection = reflectedColor.multiplyColor(obj.reflectionProperties.specularColor)
+      color = color.add specularReflection.multiply(reflectPower)
+    if refractedRay?
+      refractedColor = this.traceRec(refractedRay, color, times - 1)
+      specularRefraction = refractedColor.multiplyColor(obj.reflectionProperties.specularColor)
+      color = color.add specularRefraction.multiply(refractPower)
+    color
+
+  #nv = obj.norm(pos)
+  #w = ray.line.direction
+  #wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
+  #ks = obj.reflectionProperties.specularColor
+
+  #specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1)
+  #specularReflection = specularReflection.multiplyColor(ks)
+  #specularReflection
+
+  specularRays: (pos, obj, ray) ->
+    inside = ray.refraction isnt 1
+
+    # normal of intersection-point
     nv = obj.norm(pos)
-    w = ray.line.direction
-    wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
-    ks = obj.reflectionProperties.specularColor
+    nv = nv.multiply(-1) if inside
 
-    specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1)
-    specularReflection = specularReflection.multiplyColor(ks)
-    specularReflection
+    # view-direction
+    w = pos.subtract(ray.line.anchor).toUnitVector()
 
+    # angle between view-direction and normal
+    w_dot_nv = w.dot(nv)
+
+    # ray-reflection-direction: wr = 2n(w*n) - w
+    wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector().multiply(-1)
+    reflectedRay = new Ray($L(pos, wr), ray.refraction, ray.power)
+    reflectedRay = null if wr.elements[0] == 0 && wr.elements[0] == 0 && wr.elements[0] == 0 # hack! why does this happen?
+
+    # refraction
+    refractedRay = null
+    n1 = ray.refraction
+    n2 = (if inside then 1 else obj.reflectionProperties.refractionIndex)
+    ref = n1 / n2
+    reflectPower = 1
+    refractPower = 0
+    unless n2 is Infinity
+      first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref)
+      underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv))
+      if underRoot >= 0
+        # ray-refraction-direction
+        wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector()
+        refractedRay = new Ray($L(pos, wt), n2, ray.power)
+
+        # fresnel equation
+        cos1 = wr.dot(nv) # Math.cos(w_dot_n);
+        cos2 = wt.dot(nv.multiply(-1)) # Math.cos(wr_dot_n);
+        p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
+        p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
+        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract)
+        refractPower = 1 - reflectPower
+    [reflectedRay, refractedRay, reflectPower, refractPower]
 
 
   illuminate: (pos, obj, ray, light) ->
