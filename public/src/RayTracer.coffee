@@ -46,13 +46,13 @@ class RayTracer
     specularReflection = new Color(0, 0, 0)
     specularRefraction = new Color(0, 0, 0)
     if reflectedRay?
-      reflectedColor = this.traceRec(reflectedRay, color, times - 1)
+      reflectedColor = this.traceRec(reflectedRay, specularReflection, times - 1)
       specularReflection = reflectedColor.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularReflection.multiply(reflectPower)
+      color = color.add specularReflection #.multiply(reflectPower)
     if refractedRay?
-      refractedColor = this.traceRec(refractedRay, color, times - 1)
+      refractedColor = this.traceRec(refractedRay, specularRefraction, times - 1)
       specularRefraction = refractedColor.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularRefraction.multiply(refractPower)
+      color = color.add specularRefraction #.multiply(refractPower)
     color
 
   #nv = obj.norm(pos)
@@ -79,15 +79,13 @@ class RayTracer
 
     # ray-reflection-direction: wr = 2n(w*n) - w
     wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector().multiply(-1)
-    reflectedRay = new Ray($L(pos, wr), ray.refraction, ray.power)
-    reflectedRay = null if wr.elements[0] == 0 && wr.elements[0] == 0 && wr.elements[0] == 0 # hack! why does this happen?
 
     # refraction
     refractedRay = null
     n1 = ray.refraction
     n2 = (if inside then 1 else obj.reflectionProperties.refractionIndex)
     ref = n1 / n2
-    reflectPower = 1
+    reflectPower = ray.power
     refractPower = 0
     unless n2 is Infinity
       first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref)
@@ -95,7 +93,6 @@ class RayTracer
       if underRoot >= 0
         # ray-refraction-direction
         wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector()
-        refractedRay = new Ray($L(pos, wt), n2, ray.power)
 
         # fresnel equation
         cos1 = wr.dot(nv) # Math.cos(w_dot_n);
@@ -104,6 +101,11 @@ class RayTracer
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
         reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract)
         refractPower = 1 - reflectPower
+
+        refractedRay = new Ray($L(pos, wt), n2, refractPower)
+
+    reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower)
+    reflectedRay = null if wr.elements[0] == 0 && wr.elements[0] == 0 && wr.elements[0] == 0 # hack! why does this happen?
     [reflectedRay, refractedRay, reflectPower, refractPower]
 
 

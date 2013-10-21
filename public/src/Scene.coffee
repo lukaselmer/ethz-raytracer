@@ -17,7 +17,7 @@ class Scene
     ret = null
     @objects.forEach (object) ->
       i = object.intersects(ray)
-      if i && i < min
+      if i && i < min && i > 0.00001
         min = i
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
         ret = [intersectionPoint, object]

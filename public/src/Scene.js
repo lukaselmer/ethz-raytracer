@@ -37,7 +37,7 @@ Scene = (function() {
     this.objects.forEach(function(object) {
       var i, intersectionPoint;
       i = object.intersects(ray);
-      if (i && i < min) {
+      if (i && i < min && i > 0.00001) {
         min = i;
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
         return ret = [intersectionPoint, object];
