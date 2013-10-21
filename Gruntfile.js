@@ -19,8 +19,18 @@ module.exports = function (grunt) {
                     sourceMap: true
                 },
                 files: {
-                    './public/out/compiled.js': ['./public/src/*.coffee'] // concat then compile into single file
+                    './public/out/compiled.js': ['./public/src/*.coffee']
                 }
+            }
+        },
+        uglify: {
+            options: {
+                banner: '<%= banner %>',
+                sourceMap: './public/out/compiled.min.js.map'
+            },
+            dist: {
+                src: './public/out/compiled.js',
+                dest: './public/out/compiled.min.js'
             }
         }
 
@@ -33,15 +43,6 @@ module.exports = function (grunt) {
             dist: {
                 src: ['public/lib/*.js', 'public/src/*.coffee'],
                 dest: 'public/out/<%= pkg.name %>.js'
-            }
-        },
-        uglify: {
-            options: {
-                banner: '<%= banner %>'
-            },
-            dist: {
-                src: '<%= concat.dist.dest %>',
-                dest: 'public/out/<%= pkg.name %>.min.js'
             }
         },
         jshint: {
@@ -91,9 +92,10 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-coffee');
+    grunt.loadNpmTasks('grunt-mocha-test');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['coffee']);
+    grunt.registerTask('default', ['coffee', 'uglify']);
 
 };
