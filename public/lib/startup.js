@@ -138,7 +138,7 @@
             }
         }
         var original = document.location.toString().replace(/\?.*/, '');
-        window.history.pushState(ModuleId, 'Raytracer by Lukas Elmer', original + '?' + str);
+        window.history.pushState(ModuleId, 'Raytracer by Lukas Elmer', original + (str ? '?' + str : ''));
         initRayConfig();
     }
 
