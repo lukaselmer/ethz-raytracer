@@ -22,4 +22,3 @@ class Color
     @val.dup().elements
   toVector: ->
     @val.dup()
-

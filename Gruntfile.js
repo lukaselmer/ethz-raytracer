@@ -32,6 +32,18 @@ module.exports = function (grunt) {
                 src: './public/out/compiled.js',
                 dest: './public/out/compiled.min.js'
             }
+        },
+        karma: {
+            options: {
+                configFile: 'karma.conf.js',
+                autoWatch: true
+            },
+            ci: {
+                singleRun: true,
+                browsers: ['PhantomJS']
+            },
+            unit: {
+            }
         }
 
 
@@ -92,7 +104,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-coffee');
-    grunt.loadNpmTasks('grunt-mocha-test');
+    grunt.loadNpmTasks('grunt-karma');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);

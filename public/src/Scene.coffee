@@ -22,4 +22,3 @@ class Scene
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
         ret = [intersectionPoint, object]
     ret
-
