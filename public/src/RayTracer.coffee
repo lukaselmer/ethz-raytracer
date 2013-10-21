@@ -38,6 +38,7 @@ class RayTracer
       return color if times <= 0
 
       color = color.add(this.reflect(pos, obj, ray, times)) if RayConfig.reflection
+      color = color.add(this.refract(pos, obj, ray, times)) if RayConfig.reflection
     color
 
   reflect: (pos, obj, ray, times) ->
@@ -49,6 +50,8 @@ class RayTracer
     specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0, 0, 0), times - 1)
     specularReflection = specularReflection.multiplyColor(ks)
     specularReflection
+
+  refract: (pos, obj, ray, times) ->
 
 
   illuminate: (pos, obj, ray, light) ->
@@ -90,6 +93,7 @@ class RayTracer
         rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
           camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
+        # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
         new Ray($L(camera.position, rayDirection), 1, 1)
     .reduce((a, b) ->
         a.concat(b))

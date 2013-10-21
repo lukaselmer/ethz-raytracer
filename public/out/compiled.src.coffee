@@ -19,6 +19,8 @@ class Camera
     @position.add(@direction)
 
 class Color
+  @random: () ->
+    new Color(Math.random(), Math.random(), Math.random())
   constructor: (r, g, b) ->
     if r instanceof Vector
       g = r.elements[1]
@@ -55,7 +57,6 @@ this.loadScene = () ->
   camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height)
   #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 
-  #scene = new Scene(camera, 0.2)
   scene = new Scene(camera, 0.2)
   scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)))
   #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
@@ -63,12 +64,33 @@ this.loadScene = () ->
 
   scene.addObject(new Sphere($V([0, 0, 0]), 2,
     new ReflectionProperty(
-      #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
-      new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)))
+      # ambientColor
+      new Color(0.75, 0, 0),
+      # diffuseColor
+      new Color(1, 0, 0),
+      # specularColor
+      new Color(1, 1, 1),
+      # specularExponent
+      32,
+      # refractionIndex
+      Infinity
+    )))
+
+  #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
 
   scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
     new ReflectionProperty(
-      new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+      # ambientColor
+      new Color(0, 0, 0.75),
+      # diffuseColor
+      new Color(0, 0, 1),
+      # specularColor
+      new Color(0.5, 0.5, 1),
+      # specularExponent
+      16,
+      # refractionIndex
+      1.5
+    )))
 
   scene
 
@@ -172,6 +194,7 @@ class RayTracer
       return color if times <= 0
 
       color = color.add(this.reflect(pos, obj, ray, times)) if RayConfig.reflection
+      color = color.add(this.refract(pos, obj, ray, times)) if RayConfig.reflection
     color
 
   reflect: (pos, obj, ray, times) ->
@@ -183,6 +206,8 @@ class RayTracer
     specularReflection = this.traceRec(new Ray($L(pos, wr), 1, 1), new Color(0, 0, 0), times - 1)
     specularReflection = specularReflection.multiplyColor(ks)
     specularReflection
+
+  refract: (pos, obj, ray, times) ->
 
 
   illuminate: (pos, obj, ray, light) ->
@@ -224,6 +249,7 @@ class RayTracer
         rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
           camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
 
+        # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
         new Ray($L(camera.position, rayDirection), 1, 1)
     .reduce((a, b) ->
         a.concat(b))

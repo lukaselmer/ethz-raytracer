@@ -49,6 +49,9 @@ RayTracer = (function() {
       if (RayConfig.reflection) {
         color = color.add(this.reflect(pos, obj, ray, times));
       }
+      if (RayConfig.reflection) {
+        color = color.add(this.refract(pos, obj, ray, times));
+      }
     }
     return color;
   };
@@ -63,6 +66,8 @@ RayTracer = (function() {
     specularReflection = specularReflection.multiplyColor(ks);
     return specularReflection;
   };
+
+  RayTracer.prototype.refract = function(pos, obj, ray, times) {};
 
   RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
     var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;

@@ -35,6 +35,10 @@ Camera = (function() {
 })();
 
 Color = (function() {
+  Color.random = function() {
+    return new Color(Math.random(), Math.random(), Math.random());
+  };
+
   function Color(r, g, b) {
     if (r instanceof Vector) {
       g = r.elements[1];
@@ -194,6 +198,7 @@ this.initRayConfig = function() {
     height: 800,
     illumination: true,
     reflection: ModuleId.B1,
+    refraction: ModuleId.B1,
     antialiasing: ModuleId.B2 ? 4 : 1,
     recDepth: 10
   };
@@ -249,6 +254,9 @@ RayTracer = (function() {
       if (RayConfig.reflection) {
         color = color.add(this.reflect(pos, obj, ray, times));
       }
+      if (RayConfig.reflection) {
+        color = color.add(this.refract(pos, obj, ray, times));
+      }
     }
     return color;
   };
@@ -263,6 +271,8 @@ RayTracer = (function() {
     specularReflection = specularReflection.multiplyColor(ks);
     return specularReflection;
   };
+
+  RayTracer.prototype.refract = function(pos, obj, ray, times) {};
 
   RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
     var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;

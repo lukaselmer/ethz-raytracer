@@ -2,6 +2,10 @@
 var Color;
 
 Color = (function() {
+  Color.random = function() {
+    return new Color(Math.random(), Math.random(), Math.random());
+  };
+
   function Color(r, g, b) {
     if (r instanceof Vector) {
       g = r.elements[1];

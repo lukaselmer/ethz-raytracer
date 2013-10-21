@@ -1,4 +1,6 @@
 class Color
+  @random: () ->
+    new Color(Math.random(), Math.random(), Math.random())
   constructor: (r, g, b) ->
     if r instanceof Vector
       g = r.elements[1]
