@@ -136,14 +136,18 @@
 
   })();
 
-  this.RayConfig = {
-    width: 600,
-    height: 800,
-    illumination: true,
-    reflection: true,
-    antialiasing: ModuleId.B2 ? 4 : 1,
-    recDepth: 10
+  this.initRayConfig = function() {
+    return this.RayConfig = {
+      width: 600,
+      height: 800,
+      illumination: true,
+      reflection: true,
+      antialiasing: ModuleId.B2 ? 4 : 1,
+      recDepth: 10
+    };
   };
+
+  initRayConfig();
 
   RayTracer = (function() {
     function RayTracer(color, pixelX, pixelY, scene) {

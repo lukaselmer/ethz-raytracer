@@ -40,6 +40,7 @@
 
     // launch the renderer
     function startRendering() {
+        updateOptions();
         clearBuffer(); // clear current buffer
         curPixelX = 0;
         curPixelY = 0; // reset next pixel to be rendered
@@ -48,6 +49,7 @@
         setTimeout(function () {
             render(scene);
         }, 0); // render
+        return false;
     }
 
     // reset all the pixel to white color
@@ -113,12 +115,31 @@
         a.href = data;
         a.download = "cg-exN-lukaselmer-moduleid.png";
         a.click();
+        return false;
     }
 
     function debugPixel(x, y) {
         var color = $V([0, 0, 0]);
         trace(color, x, y);
         console.log("Pixel (" + x + "," + y + "): RGB -> " + color.e(1) + " " + color.e(2) + " " + color.e(3));
+    }
+
+    function updateOptions() {
+        $('#renderOptions .btn').each(function () {
+            var e = $(this);
+            var k = e.data('option');
+            ModuleId[k] = $(this).hasClass('active');
+        });
+        var str = '';
+        for (var k in ModuleId) {
+            if (ModuleId[k]) {
+                if (str !== '') str += '&';
+                str += k;
+            }
+        }
+        var original = document.location.toString().replace(/\?.*/, '');
+        window.history.pushState(ModuleId, 'Raytracer by Lukas Elmer', original + '?' + str);
+        initRayConfig();
     }
 
     var startup = function () {
