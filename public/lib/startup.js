@@ -130,6 +130,7 @@
             var k = e.data('option');
             ModuleId[k] = $(this).hasClass('active');
         });
+
         var str = '';
         for (var k in ModuleId) {
             if (ModuleId[k]) {

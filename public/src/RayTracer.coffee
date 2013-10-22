@@ -99,8 +99,8 @@ class RayTracer
         cos2 = wt.dot(nv.multiply(-1)) # Math.cos(wr_dot_n);
         p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
-        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract)
-        refractPower = 1 - reflectPower
+        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract) * ray.power
+        refractPower = (1 - reflectPower) * ray.power
 
         refractedRay = new Ray($L(pos, wt), n2, refractPower)
 

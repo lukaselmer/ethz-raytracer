@@ -62,35 +62,115 @@ this.loadScene = () ->
   #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
   #scene.addLight(new Light(new Color(1, 1, 1), $V([10, 5, 10]), new LightIntensity(0, 1, 1)))
 
-  scene.addObject(new Sphere($V([0, 0, 0]), 2,
+  if ModuleId.ALT
+    # alternative scene
+    c = Color.random()
+    scene.addObject(new Sphere($V([0, 0, 0]), 2,
     new ReflectionProperty(
       # ambientColor
-      new Color(0.75, 0, 0),
+      c,
       # diffuseColor
-      new Color(1, 0, 0),
+      c,
       # specularColor
       new Color(1, 1, 1),
       # specularExponent
       32,
       # refractionIndex
-      Infinity
-    )))
-
-  #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
-
-  scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
-    new ReflectionProperty(
-      # ambientColor
-      new Color(0, 0, 0.75),
-      # diffuseColor
-      new Color(0, 0, 1),
-      # specularColor
-      new Color(0.5, 0.5, 1),
-      # specularExponent
-      16,
-      # refractionIndex
       1.5
     )))
+
+    #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(
+        # ambientColor
+        c,
+        # diffuseColor
+        c,
+        # specularColor
+        new Color(0.5, 0.5, 1),
+        # specularExponent
+        16,
+        # refractionIndex
+        1.5
+      )))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([1.25, -1.25, 3]), 0.5,
+      new ReflectionProperty(
+        # ambientColor
+        c,
+        # diffuseColor
+        c,
+        # specularColor
+        new Color(0.5, 0.5, 1),
+        # specularExponent
+        16,
+        # refractionIndex
+        1.5
+      )))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([0, -.75, 3]), 0.5,
+      new ReflectionProperty(
+        # ambientColor
+        c,
+        # diffuseColor
+        c,
+        # specularColor
+        new Color(0.5, 0.5, 1),
+        # specularExponent
+        16,
+        # refractionIndex
+        1.5
+      )))
+
+    scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5,
+      new ReflectionProperty(
+        # ambientColor
+        new Color(0, 0, 0.75),
+        # diffuseColor
+        new Color(0, 0, 1),
+        # specularColor
+        new Color(0.5, 0.5, 1),
+        # specularExponent
+        16,
+        # refractionIndex
+        1.5
+      )))
+  else
+    # original scene
+    scene.addObject(new Sphere($V([0, 0, 0]), 2,
+      new ReflectionProperty(
+        # ambientColor
+        new Color(0.75, 0, 0),
+        # diffuseColor
+        new Color(1, 0, 0),
+        # specularColor
+        new Color(1, 1, 1),
+        # specularExponent
+        32,
+        # refractionIndex
+        Infinity
+      )))
+
+    #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
+
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(
+        # ambientColor
+        new Color(0, 0, 0.75),
+        # diffuseColor
+        new Color(0, 0, 1),
+        # specularColor
+        new Color(0.5, 0.5, 1),
+        # specularExponent
+        16,
+        # refractionIndex
+        1.5
+      )))
+
 
   scene
 
@@ -112,6 +192,7 @@ this.ModuleId =
   C3: `undefined` #... meshes
   D1: `undefined` #... octree
   D2: `undefined` #... area light
+  ALT: `undefined` #... alternative scene
 
 if document? && $?
   $(document).ready ->
@@ -150,7 +231,7 @@ this.initRayConfig = () ->
     reflection: ModuleId.B1
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
-    recDepth: 10
+    recDepth: 20
 
 initRayConfig()
 
@@ -255,8 +336,8 @@ class RayTracer
         cos2 = wt.dot(nv.multiply(-1)) # Math.cos(wr_dot_n);
         p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
-        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract)
-        refractPower = 1 - reflectPower
+        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract) * ray.power
+        refractPower = (1 - reflectPower) * ray.power
 
         refractedRay = new Ray($L(pos, wt), n2, refractPower)
 

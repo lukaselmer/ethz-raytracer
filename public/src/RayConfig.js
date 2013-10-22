@@ -8,7 +8,8 @@ this.ModuleId = {
   C2: undefined,
   C3: undefined,
   D1: undefined,
-  D2: undefined
+  D2: undefined,
+  ALT: undefined
 };
 
 if ((typeof document !== "undefined" && document !== null) && (typeof $ !== "undefined" && $ !== null)) {
@@ -59,7 +60,7 @@ this.initRayConfig = function() {
     reflection: ModuleId.B1,
     refraction: ModuleId.B1,
     antialiasing: ModuleId.B2 ? 4 : 1,
-    recDepth: 10
+    recDepth: 20
   };
 };
 

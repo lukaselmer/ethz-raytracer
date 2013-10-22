@@ -8,6 +8,7 @@ this.ModuleId =
   C3: `undefined` #... meshes
   D1: `undefined` #... octree
   D2: `undefined` #... area light
+  ALT: `undefined` #... alternative scene
 
 if document? && $?
   $(document).ready ->
@@ -46,6 +47,6 @@ this.initRayConfig = () ->
     reflection: ModuleId.B1
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
-    recDepth: 10
+    recDepth: 20
 
 initRayConfig()

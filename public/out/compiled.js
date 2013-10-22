@@ -113,13 +113,25 @@
   })();
 
   this.loadScene = function() {
-    var camera, fieldOfView, scene;
+    var c, camera, fieldOfView, scene;
     fieldOfView = 40 / 180 * Math.PI;
     camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height);
     scene = new Scene(camera, 0.2);
     scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
-    scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
-    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+    if (ModuleId.ALT) {
+      c = Color.random();
+      scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(c, c, new Color(1, 1, 1), 32, 1.5)));
+      c = Color.random();
+      scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)));
+      c = Color.random();
+      scene.addObject(new Sphere($V([1.25, -1.25, 3]), 0.5, new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)));
+      c = Color.random();
+      scene.addObject(new Sphere($V([0, -.75, 3]), 0.5, new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)));
+      scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+    } else {
+      scene.addObject(new Sphere($V([0, 0, 0]), 2, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
+      scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+    }
     return scene;
   };
 
@@ -149,7 +161,8 @@
     C2: undefined,
     C3: undefined,
     D1: undefined,
-    D2: undefined
+    D2: undefined,
+    ALT: undefined
   };
 
   if ((typeof document !== "undefined" && document !== null) && (typeof $ !== "undefined" && $ !== null)) {
@@ -200,7 +213,7 @@
       reflection: ModuleId.B1,
       refraction: ModuleId.B1,
       antialiasing: ModuleId.B2 ? 4 : 1,
-      recDepth: 10
+      recDepth: 20
     };
   };
 
@@ -302,8 +315,8 @@
           cos2 = wt.dot(nv.multiply(-1));
           p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2);
           p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
-          reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract);
-          refractPower = 1 - reflectPower;
+          reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract) * ray.power;
+          refractPower = (1 - reflectPower) * ray.power;
           refractedRay = new Ray($L(pos, wt), n2, refractPower);
         }
       }
