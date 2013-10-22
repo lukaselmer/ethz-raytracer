@@ -41,8 +41,8 @@ if document? && $?
 
 this.initRayConfig = () ->
   this.RayConfig =
-    width: 600
-    height: 800
+    width: 400*2 #800
+    height: 300*2 #600
     illumination: true
     reflection: ModuleId.B1
     refraction: ModuleId.B1

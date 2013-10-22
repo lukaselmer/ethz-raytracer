@@ -45,6 +45,13 @@ class Color
   toVector: ->
     @val.dup()
 
+### Random log ###
+console.setRlog = (p = 0.01) ->
+  @shoulLog = Math.random() <= p
+console.rlog = (msg) ->
+  return unless @shoulLog
+  console.log(msg)
+
 class Light
   constructor: (@color, @location, @intensity) ->
 
@@ -53,7 +60,8 @@ class LightIntensity
 
 # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
 this.loadScene = () ->
-  fieldOfView = 40 / 180 * Math.PI
+  #fieldOfView = 40 / 180 * Math.PI
+  fieldOfView = 30 / 180 * Math.PI
   camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height)
   #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 
@@ -225,8 +233,8 @@ if document? && $?
 
 this.initRayConfig = () ->
   this.RayConfig =
-    width: 600
-    height: 800
+    width: 400*2 #800
+    height: 300*2 #600
     illumination: true
     reflection: ModuleId.B1
     refraction: ModuleId.B1
@@ -245,6 +253,8 @@ class RayTracer
     # 4. shade the intersection point using the meterial attributes and the lightings
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
     rays = this.castRays(RayConfig.antialiasing)
+
+    console.setRlog()
 
     traceRay = (ray) =>
       this.traceRec(ray, new Color(0, 0, 0), RayConfig.recDepth)
@@ -278,18 +288,17 @@ class RayTracer
     color
 
   reflectAndRefract: (pos, obj, ray, times) ->
-    [reflectedRay, refractedRay, reflectPower, refractPower] = this.specularRays(pos, obj, ray)
+    [reflectedRay, refractedRay] = this.specularRays(pos, obj, ray)
     color = new Color(0, 0, 0)
-    specularReflection = new Color(0, 0, 0)
-    specularRefraction = new Color(0, 0, 0)
     if reflectedRay?
-      reflectedColor = this.traceRec(reflectedRay, specularReflection, times - 1)
-      specularReflection = reflectedColor.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularReflection #.multiply(reflectPower)
+      specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1)
+      specularReflection = specularReflection.multiplyColor(obj.reflectionProperties.specularColor)
+      color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
-      refractedColor = this.traceRec(refractedRay, specularRefraction, times - 1)
-      specularRefraction = refractedColor.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularRefraction #.multiply(refractPower)
+      specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1)
+      if ray.refraction != 1
+        specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
+      color = color.add specularRefraction.multiply(refractedRay.power * 0.5)
     color
 
   #nv = obj.norm(pos)
@@ -309,24 +318,28 @@ class RayTracer
     nv = nv.multiply(-1) if inside
 
     # view-direction
-    w = pos.subtract(ray.line.anchor).toUnitVector()
+    w = ray.line.anchor.subtract(pos).toUnitVector()
 
     # angle between view-direction and normal
     w_dot_nv = w.dot(nv)
 
     # ray-reflection-direction: wr = 2n(w*n) - w
-    wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector().multiply(-1)
+    wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector()
 
     # refraction
     refractedRay = null
     n1 = ray.refraction
     n2 = (if inside then 1 else obj.reflectionProperties.refractionIndex)
     ref = n1 / n2
-    reflectPower = ray.power
+    reflectPower = 0
     refractPower = 0
     unless n2 is Infinity
       first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref)
       underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv))
+
+      if underRoot < 0 && !inside
+        throw "underRoot < 0 && !inside"
+
       if underRoot >= 0
         # ray-refraction-direction
         wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector()
@@ -336,14 +349,15 @@ class RayTracer
         cos2 = wt.dot(nv.multiply(-1)) # Math.cos(wr_dot_n);
         p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
-        reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract) * ray.power
+        reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power #* 0.5
         refractPower = (1 - reflectPower) * ray.power
 
         refractedRay = new Ray($L(pos, wt), n2, refractPower)
+      else
+        reflectPower = ray.power
 
     reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower)
-    reflectedRay = null if wr.elements[0] == 0 && wr.elements[0] == 0 && wr.elements[0] == 0 # hack! why does this happen?
-    [reflectedRay, refractedRay, reflectPower, refractPower]
+    [reflectedRay, refractedRay]
 
 
   illuminate: (pos, obj, ray, light) ->
@@ -459,10 +473,3 @@ class Sphere
     t = rayDistanceClosestToCenter - Math.sqrt(x)
     #console.rlog "halfChordDistance=" + t
     t
-
-### Random log ###
-console.setRlog = (p = 0.0001) ->
-  @shoulLog = Math.random() <= p
-console.rlog = (msg) ->
-  return unless @shoulLog
-  console.log(msg)

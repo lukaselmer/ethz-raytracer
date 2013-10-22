@@ -90,6 +90,23 @@
 
   })();
 
+  /* Random log*/
+
+
+  console.setRlog = function(p) {
+    if (p == null) {
+      p = 0.01;
+    }
+    return this.shoulLog = Math.random() <= p;
+  };
+
+  console.rlog = function(msg) {
+    if (!this.shoulLog) {
+      return;
+    }
+    return console.log(msg);
+  };
+
   Light = (function() {
     function Light(color, location, intensity) {
       this.color = color;
@@ -114,7 +131,7 @@
 
   this.loadScene = function() {
     var c, camera, fieldOfView, scene;
-    fieldOfView = 40 / 180 * Math.PI;
+    fieldOfView = 30 / 180 * Math.PI;
     camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height);
     scene = new Scene(camera, 0.2);
     scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)));
@@ -207,8 +224,8 @@
 
   this.initRayConfig = function() {
     return this.RayConfig = {
-      width: 600,
-      height: 800,
+      width: 400 * 2,
+      height: 300 * 2,
       illumination: true,
       reflection: ModuleId.B1,
       refraction: ModuleId.B1,
@@ -231,6 +248,7 @@
       var averageColorVector, colors, rays, traceRay,
         _this = this;
       rays = this.castRays(RayConfig.antialiasing);
+      console.setRlog();
       traceRay = function(ray) {
         return _this.traceRec(ray, new Color(0, 0, 0), RayConfig.recDepth);
       };
@@ -272,20 +290,20 @@
     };
 
     RayTracer.prototype.reflectAndRefract = function(pos, obj, ray, times) {
-      var color, reflectPower, reflectedColor, reflectedRay, refractPower, refractedColor, refractedRay, specularReflection, specularRefraction, _ref;
-      _ref = this.specularRays(pos, obj, ray), reflectedRay = _ref[0], refractedRay = _ref[1], reflectPower = _ref[2], refractPower = _ref[3];
+      var color, reflectedRay, refractedRay, specularReflection, specularRefraction, _ref;
+      _ref = this.specularRays(pos, obj, ray), reflectedRay = _ref[0], refractedRay = _ref[1];
       color = new Color(0, 0, 0);
-      specularReflection = new Color(0, 0, 0);
-      specularRefraction = new Color(0, 0, 0);
       if (reflectedRay != null) {
-        reflectedColor = this.traceRec(reflectedRay, specularReflection, times - 1);
-        specularReflection = reflectedColor.multiplyColor(obj.reflectionProperties.specularColor);
-        color = color.add(specularReflection);
+        specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1);
+        specularReflection = specularReflection.multiplyColor(obj.reflectionProperties.specularColor);
+        color = color.add(specularReflection.multiply(reflectedRay.power));
       }
       if (refractedRay != null) {
-        refractedColor = this.traceRec(refractedRay, specularRefraction, times - 1);
-        specularRefraction = refractedColor.multiplyColor(obj.reflectionProperties.specularColor);
-        color = color.add(specularRefraction);
+        specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1);
+        if (ray.refraction !== 1) {
+          specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor);
+        }
+        color = color.add(specularRefraction.multiply(refractedRay.power * 0.5));
       }
       return color;
     };
@@ -297,34 +315,36 @@
       if (inside) {
         nv = nv.multiply(-1);
       }
-      w = pos.subtract(ray.line.anchor).toUnitVector();
+      w = ray.line.anchor.subtract(pos).toUnitVector();
       w_dot_nv = w.dot(nv);
-      wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector().multiply(-1);
+      wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector();
       refractedRay = null;
       n1 = ray.refraction;
       n2 = (inside ? 1 : obj.reflectionProperties.refractionIndex);
       ref = n1 / n2;
-      reflectPower = ray.power;
+      reflectPower = 0;
       refractPower = 0;
       if (n2 !== Infinity) {
         first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref);
         underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv));
+        if (underRoot < 0 && !inside) {
+          throw "underRoot < 0 && !inside";
+        }
         if (underRoot >= 0) {
           wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector();
           cos1 = wr.dot(nv);
           cos2 = wt.dot(nv.multiply(-1));
           p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2);
           p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
-          reflectPower = 0.5 * (p_reflect * p_reflect + p_refract * p_refract) * ray.power;
+          reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power;
           refractPower = (1 - reflectPower) * ray.power;
           refractedRay = new Ray($L(pos, wt), n2, refractPower);
+        } else {
+          reflectPower = ray.power;
         }
       }
       reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower);
-      if (wr.elements[0] === 0 && wr.elements[0] === 0 && wr.elements[0] === 0) {
-        reflectedRay = null;
-      }
-      return [reflectedRay, refractedRay, reflectPower, refractPower];
+      return [reflectedRay, refractedRay];
     };
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
@@ -485,23 +505,6 @@
     return Sphere;
 
   })();
-
-  /* Random log*/
-
-
-  console.setRlog = function(p) {
-    if (p == null) {
-      p = 0.0001;
-    }
-    return this.shoulLog = Math.random() <= p;
-  };
-
-  console.rlog = function(msg) {
-    if (!this.shoulLog) {
-      return;
-    }
-    return console.log(msg);
-  };
 
 }).call(this);
 

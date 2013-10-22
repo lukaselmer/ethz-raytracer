@@ -1,5 +1,5 @@
 ### Random log ###
-console.setRlog = (p = 0.0001) ->
+console.setRlog = (p = 0.01) ->
   @shoulLog = Math.random() <= p
 console.rlog = (msg) ->
   return unless @shoulLog

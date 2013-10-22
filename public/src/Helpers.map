@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Helpers.js",
+  "sourceRoot": "",
+  "sources": [
+    "Helpers.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA;CAAA;CAAA;CAAA,CACA,CAAkB,IAAX,EAAY;;GAAI,GAAJ;MACjB;CAAC,EAAW,CAAX,EAAW,EAAZ,GAAA;CAFF,EACkB;;CADlB,CAGA,CAAe,CAAf,GAAO,EAAS;AACA,CAAd,GAAA,IAAA;CAAA,WAAA;MAAA;CACQ,EAAR,IAAO,IAAP;CALF,EAGe;CAHf"
+}
