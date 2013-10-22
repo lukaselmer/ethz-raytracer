@@ -45,13 +45,6 @@ class Color
   toVector: ->
     @val.dup()
 
-### Random log ###
-console.setRlog = (p = 0.01) ->
-  @shoulLog = Math.random() <= p
-console.rlog = (msg) ->
-  return unless @shoulLog
-  console.log(msg)
-
 class Light
   constructor: (@color, @location, @intensity) ->
 
@@ -312,42 +305,88 @@ class RayTracer
   #specularReflection
 
   specularRays: (pos, obj, ray) ->
-    inside = ray.refraction isnt 1
+    # the norm n (unit vector)
+    n = obj.norm(pos)
+    # the view direction / input ray i (vector)
+    i = ray.line.anchor.subtract(pos)
+    n1 = ray.refraction
+    n2 = obj.reflectionProperties.refractionIndex
+    # the angle theta θ = i*n
+    i_dot_n = i.dot(n)
+    cos_theta_i = -i_dot_n
 
+    theta_i = Math.abs(i_dot_n)
+
+    # === reflection ===
+
+    # reflection ray r (unit vector)
+    reflectionDirection = i.subtract(n.multiply(2 * (i.dot(n)))) #.multiply(-1) # why multiply -1?
+
+    # === refraction ===
+
+    # Total reflection!
+    if n2 == Infinity
+      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+
+    ratio = n1 / n2
+    sin_theta_t_2 = Math.square(ratio) * (1 - Math.square(cos_theta_i))
+
+    if sin_theta_t_2 > 1
+      # Total reflection!
+      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+
+    cos_theta_t = Math.sqrt(1 - sin_theta_t_2)
+    refractionDirection = pos.multiply(ratio).add(n.multiply((ratio*cos_theta_i) - cos_theta_t))
+
+    # Ok, both reflection and refraction exist => how is the ratio of the power? => frensel approximation
+    # Note: we could also use the schlick's approximation which would be a little bit faster but less exact
+    r1 = Math.square((n1 * cos_theta_i - n2 * cos_theta_t) / (n1 * cos_theta_i + n2 * cos_theta_t))
+    r2 = Math.square((n2 * cos_theta_i - n1 * cos_theta_t) / (n2 * cos_theta_i + n1 * cos_theta_t))
+    reflectionPowerRatio = (r1 + r2) / 2
+    refractionPowerRatio = 1 - reflectionPowerRatio
+    unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
+      # Total reflection!
+      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+
+    throw "Invalid state: reflectionPowerRatio: #{reflectionPowerRatio}, refractionPowerRatio: #{refractionPowerRatio}" unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
+
+    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio), new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)]
+
+  ###
     # normal of intersection-point
-    nv = obj.norm(pos)
-    nv = nv.multiply(-1) if inside
+    #n = obj.norm(pos)
+    n = n.multiply(-1) if ray.isInside()
 
     # view-direction
     w = ray.line.anchor.subtract(pos).toUnitVector()
 
     # angle between view-direction and normal
-    w_dot_nv = w.dot(nv)
+    w_dot_nv = w.dot(n)
 
     # ray-reflection-direction: wr = 2n(w*n) - w
-    wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector()
+    wr = n.multiply(2 * w_dot_nv).subtract(w).toUnitVector()
 
     # refraction
     refractedRay = null
     n1 = ray.refraction
-    n2 = (if inside then 1 else obj.reflectionProperties.refractionIndex)
+    n2 = (if ray.isInside() then 1 else obj.reflectionProperties.refractionIndex)
     ref = n1 / n2
     reflectPower = 0
     refractPower = 0
     unless n2 is Infinity
-      first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref)
+      first = w.subtract(n.multiply(w_dot_nv)).multiply(-ref)
       underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv))
 
-      if underRoot < 0 && !inside
-        throw "underRoot < 0 && !inside"
+      if underRoot < 0 && !ray.isInside()
+        throw "underRoot < 0 && !ray.isInside()"
 
       if underRoot >= 0
         # ray-refraction-direction
-        wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector()
+        wt = first.subtract(n.multiply(Math.sqrt(underRoot))).toUnitVector()
 
         # fresnel equation
-        cos1 = wr.dot(nv) # Math.cos(w_dot_n);
-        cos2 = wt.dot(nv.multiply(-1)) # Math.cos(wr_dot_n);
+        cos1 = wr.dot(n) # Math.cos(w_dot_n);
+        cos2 = wt.dot(n.multiply(-1)) # Math.cos(wr_dot_n);
         p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
         reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power #* 0.5
@@ -359,7 +398,7 @@ class RayTracer
 
     reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower)
     [reflectedRay, refractedRay]
-
+  ###
 
   illuminate: (pos, obj, ray, light) ->
     nv = obj.norm(pos)
@@ -474,3 +513,12 @@ class Sphere
     t = rayDistanceClosestToCenter - Math.sqrt(x)
     #console.rlog "halfChordDistance=" + t
     t
+
+### Random log ###
+console.setRlog = (p = 0.01) ->
+  @shoulLog = Math.random() <= p
+console.rlog = (msg) ->
+  return unless @shoulLog
+  console.log(msg)
+
+Math.square = (num) -> num * num

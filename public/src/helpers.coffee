@@ -4,3 +4,5 @@ console.setRlog = (p = 0.01) ->
 console.rlog = (msg) ->
   return unless @shoulLog
   console.log(msg)
+
+Math.square = (num) -> num * num

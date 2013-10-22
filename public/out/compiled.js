@@ -90,23 +90,6 @@
 
   })();
 
-  /* Random log*/
-
-
-  console.setRlog = function(p) {
-    if (p == null) {
-      p = 0.01;
-    }
-    return this.shoulLog = Math.random() <= p;
-  };
-
-  console.rlog = function(msg) {
-    if (!this.shoulLog) {
-      return;
-    }
-    return console.log(msg);
-  };
-
   Light = (function() {
     function Light(color, location, intensity) {
       this.color = color;
@@ -313,43 +296,86 @@
     };
 
     RayTracer.prototype.specularRays = function(pos, obj, ray) {
-      var cos1, cos2, first, inside, n1, n2, nv, p_reflect, p_refract, ref, reflectPower, reflectedRay, refractPower, refractedRay, underRoot, w, w_dot_nv, wr, wt;
-      inside = ray.refraction !== 1;
-      nv = obj.norm(pos);
-      if (inside) {
-        nv = nv.multiply(-1);
-      }
-      w = ray.line.anchor.subtract(pos).toUnitVector();
-      w_dot_nv = w.dot(nv);
-      wr = nv.multiply(2 * w_dot_nv).subtract(w).toUnitVector();
-      refractedRay = null;
+      var cos_theta_i, cos_theta_t, i, i_dot_n, n, n1, n2, r1, r2, ratio, reflectionDirection, reflectionPowerRatio, refractionDirection, refractionPowerRatio, sin_theta_t_2, theta_i;
+      n = obj.norm(pos);
+      i = ray.line.anchor.subtract(pos);
       n1 = ray.refraction;
-      n2 = (inside ? 1 : obj.reflectionProperties.refractionIndex);
-      ref = n1 / n2;
-      reflectPower = 0;
-      refractPower = 0;
-      if (n2 !== Infinity) {
-        first = w.subtract(nv.multiply(w_dot_nv)).multiply(-ref);
-        underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv));
-        if (underRoot < 0 && !inside) {
-          throw "underRoot < 0 && !inside";
-        }
-        if (underRoot >= 0) {
-          wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector();
-          cos1 = wr.dot(nv);
-          cos2 = wt.dot(nv.multiply(-1));
-          p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2);
-          p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
-          reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power;
-          refractPower = (1 - reflectPower) * ray.power;
-          refractedRay = new Ray($L(pos, wt), n2, refractPower);
-        } else {
-          reflectPower = ray.power;
-        }
+      n2 = obj.reflectionProperties.refractionIndex;
+      i_dot_n = i.dot(n);
+      cos_theta_i = -i_dot_n;
+      theta_i = Math.abs(i_dot_n);
+      reflectionDirection = i.subtract(n.multiply(2 * (i.dot(n))));
+      if (n2 === Infinity) {
+        return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
       }
-      reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower);
-      return [reflectedRay, refractedRay];
+      ratio = n1 / n2;
+      sin_theta_t_2 = Math.square(ratio) * (1 - Math.square(cos_theta_i));
+      if (sin_theta_t_2 > 1) {
+        return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
+      }
+      cos_theta_t = Math.sqrt(1 - sin_theta_t_2);
+      refractionDirection = pos.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t));
+      r1 = Math.square((n1 * cos_theta_i - n2 * cos_theta_t) / (n1 * cos_theta_i + n2 * cos_theta_t));
+      r2 = Math.square((n2 * cos_theta_i - n1 * cos_theta_t) / (n2 * cos_theta_i + n1 * cos_theta_t));
+      reflectionPowerRatio = (r1 + r2) / 2;
+      refractionPowerRatio = 1 - reflectionPowerRatio;
+      if (!((0 <= reflectionPowerRatio && reflectionPowerRatio <= 1) && (0 <= refractionPowerRatio && refractionPowerRatio <= 1))) {
+        return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
+      }
+      if (!((0 <= reflectionPowerRatio && reflectionPowerRatio <= 1) && (0 <= refractionPowerRatio && refractionPowerRatio <= 1))) {
+        throw "Invalid state: reflectionPowerRatio: " + reflectionPowerRatio + ", refractionPowerRatio: " + refractionPowerRatio;
+      }
+      return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio), new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)];
     };
+
+    /*
+      # normal of intersection-point
+      #n = obj.norm(pos)
+      n = n.multiply(-1) if ray.isInside()
+    
+      # view-direction
+      w = ray.line.anchor.subtract(pos).toUnitVector()
+    
+      # angle between view-direction and normal
+      w_dot_nv = w.dot(n)
+    
+      # ray-reflection-direction: wr = 2n(w*n) - w
+      wr = n.multiply(2 * w_dot_nv).subtract(w).toUnitVector()
+    
+      # refraction
+      refractedRay = null
+      n1 = ray.refraction
+      n2 = (if ray.isInside() then 1 else obj.reflectionProperties.refractionIndex)
+      ref = n1 / n2
+      reflectPower = 0
+      refractPower = 0
+      unless n2 is Infinity
+        first = w.subtract(n.multiply(w_dot_nv)).multiply(-ref)
+        underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv))
+    
+        if underRoot < 0 && !ray.isInside()
+          throw "underRoot < 0 && !ray.isInside()"
+    
+        if underRoot >= 0
+          # ray-refraction-direction
+          wt = first.subtract(n.multiply(Math.sqrt(underRoot))).toUnitVector()
+    
+          # fresnel equation
+          cos1 = wr.dot(n) # Math.cos(w_dot_n);
+          cos2 = wt.dot(n.multiply(-1)) # Math.cos(wr_dot_n);
+          p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
+          p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
+          reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power #* 0.5
+          refractPower = (1 - reflectPower) * ray.power #* 0.5
+    
+          refractedRay = new Ray($L(pos, wt), n2, refractPower)
+        else
+          reflectPower = ray.power
+    
+      reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower)
+      [reflectedRay, refractedRay]
+    */
+
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
       var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
@@ -509,6 +535,27 @@
     return Sphere;
 
   })();
+
+  /* Random log*/
+
+
+  console.setRlog = function(p) {
+    if (p == null) {
+      p = 0.01;
+    }
+    return this.shoulLog = Math.random() <= p;
+  };
+
+  console.rlog = function(msg) {
+    if (!this.shoulLog) {
+      return;
+    }
+    return console.log(msg);
+  };
+
+  Math.square = function(num) {
+    return num * num;
+  };
 
 }).call(this);
 
