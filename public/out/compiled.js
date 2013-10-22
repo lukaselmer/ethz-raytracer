@@ -165,6 +165,10 @@
       this.power = power;
     }
 
+    Ray.prototype.isInside = function() {
+      return this.refraction !== 1;
+    };
+
     return Ray;
 
   })();
@@ -303,7 +307,7 @@
         if (ray.refraction !== 1) {
           specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor);
         }
-        color = color.add(specularRefraction.multiply(refractedRay.power * 0.5));
+        color = color.add(specularRefraction.multiply(refractedRay.power));
       }
       return color;
     };

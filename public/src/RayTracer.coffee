@@ -53,7 +53,7 @@ class RayTracer
       specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1)
       if ray.refraction != 1
         specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularRefraction.multiply(refractedRay.power * 0.5)
+      color = color.add specularRefraction.multiply(refractedRay.power) #* 0.5
     color
 
   #nv = obj.norm(pos)
@@ -105,7 +105,7 @@ class RayTracer
         p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
         p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
         reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power #* 0.5
-        refractPower = (1 - reflectPower) * ray.power
+        refractPower = (1 - reflectPower) * ray.power #* 0.5
 
         refractedRay = new Ray($L(pos, wt), n2, refractPower)
       else

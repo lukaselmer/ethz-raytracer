@@ -304,7 +304,7 @@
         if (ray.refraction !== 1) {
           specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor);
         }
-        color = color.add(specularRefraction.multiply(refractedRay.power * 0.5));
+        color = color.add(specularRefraction.multiply(refractedRay.power));
       }
       return color;
     };
@@ -334,10 +334,7 @@
         if (underRoot >= 0) {
           wt = first.subtract(nv.multiply(Math.sqrt(underRoot))).toUnitVector();
           cos1 = wr.dot(nv);
-          cos2 = wt.dot(nv.multiply(1));
-          console.rlog('--');
-          console.rlog(Math.acos(cos1) * 180 / Math.PI);
-          console.rlog(Math.acos(cos2) * 180 / Math.PI);
+          cos2 = wt.dot(nv.multiply(-1));
           p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2);
           p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
           reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power;
