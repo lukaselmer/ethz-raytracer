@@ -217,7 +217,8 @@ this.initRayConfig = function() {
     reflection: ModuleId.B1,
     refraction: ModuleId.B1,
     antialiasing: ModuleId.B2 ? 4 : 1,
-    recDepth: 20
+    recDepth: 3,
+    intersectionDelta: 0.0001
   };
 };
 
@@ -483,7 +484,7 @@ Scene = (function() {
     this.objects.forEach(function(object) {
       var i, intersectionPoint;
       i = object.intersects(ray);
-      if (i && i < min && i > 0.00001) {
+      if (i && i < min && i > RayConfig.intersectionDelta) {
         min = i;
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
         return ret = [intersectionPoint, object];
@@ -509,7 +510,7 @@ Sphere = (function() {
   };
 
   Sphere.prototype.intersects = function(ray) {
-    var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t, x;
+    var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t1, t2, x;
     console.setRlog();
     o = ray.line.anchor;
     d = ray.line.direction;
@@ -528,8 +529,15 @@ Sphere = (function() {
     if (x < 0) {
       return false;
     }
-    t = rayDistanceClosestToCenter - Math.sqrt(x);
-    return t;
+    t1 = rayDistanceClosestToCenter - Math.sqrt(x);
+    t2 = rayDistanceClosestToCenter + Math.sqrt(x);
+    if (t1 < RayConfig.intersectionDelta) {
+      return t2;
+    }
+    if (t2 < RayConfig.intersectionDelta) {
+      return t1;
+    }
+    return Math.min(t1, t2);
   };
 
   return Sphere;

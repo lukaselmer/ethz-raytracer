@@ -36,6 +36,9 @@ class Sphere
     # t = (o-c)*d ± sqrt(r^2 - D^2)
     x = @radiusSquared - shortestDistanceFromCenterToRaySquared
     return false if x < 0
-    t = rayDistanceClosestToCenter - Math.sqrt(x)
-    #console.rlog "halfChordDistance=" + t
-    t
+    t1 = rayDistanceClosestToCenter - Math.sqrt(x)
+    t2 = rayDistanceClosestToCenter + Math.sqrt(x)
+    return t2  if t1 < RayConfig.intersectionDelta
+    return t1  if t2 < RayConfig.intersectionDelta
+    Math.min t1, t2
+

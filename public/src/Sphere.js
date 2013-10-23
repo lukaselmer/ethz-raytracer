@@ -14,7 +14,7 @@ Sphere = (function() {
   };
 
   Sphere.prototype.intersects = function(ray) {
-    var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t, x;
+    var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t1, t2, x;
     console.setRlog();
     o = ray.line.anchor;
     d = ray.line.direction;
@@ -33,8 +33,15 @@ Sphere = (function() {
     if (x < 0) {
       return false;
     }
-    t = rayDistanceClosestToCenter - Math.sqrt(x);
-    return t;
+    t1 = rayDistanceClosestToCenter - Math.sqrt(x);
+    t2 = rayDistanceClosestToCenter + Math.sqrt(x);
+    if (t1 < RayConfig.intersectionDelta) {
+      return t2;
+    }
+    if (t2 < RayConfig.intersectionDelta) {
+      return t1;
+    }
+    return Math.min(t1, t2);
   };
 
   return Sphere;

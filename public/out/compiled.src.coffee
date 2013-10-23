@@ -233,7 +233,8 @@ this.initRayConfig = () ->
     reflection: ModuleId.B1
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
-    recDepth: 20
+    recDepth: 5
+    intersectionDelta: 0.0001
 
 initRayConfig()
 
@@ -469,7 +470,7 @@ class Scene
     ret = null
     @objects.forEach (object) ->
       i = object.intersects(ray)
-      if i && i < min && i > 0.00001
+      if i && i < min && i > RayConfig.intersectionDelta
         min = i
         intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
         ret = [intersectionPoint, object]
@@ -513,9 +514,12 @@ class Sphere
     # t = (o-c)*d ± sqrt(r^2 - D^2)
     x = @radiusSquared - shortestDistanceFromCenterToRaySquared
     return false if x < 0
-    t = rayDistanceClosestToCenter - Math.sqrt(x)
-    #console.rlog "halfChordDistance=" + t
-    t
+    t1 = rayDistanceClosestToCenter - Math.sqrt(x)
+    t2 = rayDistanceClosestToCenter + Math.sqrt(x)
+    return t2  if t1 < RayConfig.intersectionDelta
+    return t1  if t2 < RayConfig.intersectionDelta
+    Math.min t1, t2
+
 
 ### Random log ###
 console.setRlog = (p = 0.01) ->
