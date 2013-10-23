@@ -308,19 +308,18 @@ class RayTracer
     # the norm n (unit vector)
     n = obj.norm(pos)
     # the view direction / input ray i (vector)
-    i = ray.line.anchor.subtract(pos)
+    i = pos.subtract(ray.line.anchor)
     n1 = ray.refraction
     n2 = obj.reflectionProperties.refractionIndex
     # the angle theta θ = i*n
     i_dot_n = i.dot(n)
     cos_theta_i = -i_dot_n
-
-    theta_i = Math.abs(i_dot_n)
+    #cos_theta_i = -cos_theta_i if ray.isInside()
 
     # === reflection ===
 
     # reflection ray r (unit vector)
-    reflectionDirection = i.subtract(n.multiply(2 * (i.dot(n)))) #.multiply(-1) # why multiply -1?
+    reflectionDirection = i.add(n.multiply(2 * cos_theta_i))
 
     # === refraction ===
 
@@ -336,7 +335,7 @@ class RayTracer
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
 
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2)
-    refractionDirection = pos.multiply(ratio).add(n.multiply((ratio*cos_theta_i) - cos_theta_t))
+    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t))
 
     # Ok, both reflection and refraction exist => how is the ratio of the power? => frensel approximation
     # Note: we could also use the schlick's approximation which would be a little bit faster but less exact
@@ -344,13 +343,15 @@ class RayTracer
     r2 = Math.square((n2 * cos_theta_i - n1 * cos_theta_t) / (n2 * cos_theta_i + n1 * cos_theta_t))
     reflectionPowerRatio = (r1 + r2) / 2
     refractionPowerRatio = 1 - reflectionPowerRatio
+
     unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
       # Total reflection!
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
 
     throw "Invalid state: reflectionPowerRatio: #{reflectionPowerRatio}, refractionPowerRatio: #{refractionPowerRatio}" unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
 
-    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio), new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)]
+    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio),
+            new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)] # * 0.5 : why here * 0.5
 
   ###
     # normal of intersection-point

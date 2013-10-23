@@ -296,15 +296,14 @@ RayTracer = (function() {
   };
 
   RayTracer.prototype.specularRays = function(pos, obj, ray) {
-    var cos_theta_i, cos_theta_t, i, i_dot_n, n, n1, n2, r1, r2, ratio, reflectionDirection, reflectionPowerRatio, refractionDirection, refractionPowerRatio, sin_theta_t_2, theta_i;
+    var cos_theta_i, cos_theta_t, i, i_dot_n, n, n1, n2, r1, r2, ratio, reflectionDirection, reflectionPowerRatio, refractionDirection, refractionPowerRatio, sin_theta_t_2;
     n = obj.norm(pos);
-    i = ray.line.anchor.subtract(pos);
+    i = pos.subtract(ray.line.anchor);
     n1 = ray.refraction;
     n2 = obj.reflectionProperties.refractionIndex;
     i_dot_n = i.dot(n);
     cos_theta_i = -i_dot_n;
-    theta_i = Math.abs(i_dot_n);
-    reflectionDirection = i.subtract(n.multiply(2 * (i.dot(n))));
+    reflectionDirection = i.add(n.multiply(2 * cos_theta_i));
     if (n2 === Infinity) {
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
     }
@@ -314,7 +313,7 @@ RayTracer = (function() {
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
     }
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2);
-    refractionDirection = pos.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t));
+    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t));
     r1 = Math.square((n1 * cos_theta_i - n2 * cos_theta_t) / (n1 * cos_theta_i + n2 * cos_theta_t));
     r2 = Math.square((n2 * cos_theta_i - n1 * cos_theta_t) / (n2 * cos_theta_i + n1 * cos_theta_t));
     reflectionPowerRatio = (r1 + r2) / 2;
@@ -325,7 +324,7 @@ RayTracer = (function() {
     if (!((0 <= reflectionPowerRatio && reflectionPowerRatio <= 1) && (0 <= refractionPowerRatio && refractionPowerRatio <= 1))) {
       throw "Invalid state: reflectionPowerRatio: " + reflectionPowerRatio + ", refractionPowerRatio: " + refractionPowerRatio;
     }
-    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio), new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)];
+    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio), new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio * 0.5)];
   };
 
   /*
