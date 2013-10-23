@@ -287,9 +287,7 @@
       }
       if (refractedRay != null) {
         specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1);
-        if (ray.refraction !== 1) {
-          specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor);
-        }
+        specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor);
         color = color.add(specularRefraction.multiply(refractedRay.power));
       }
       return color;
@@ -298,9 +296,12 @@
     RayTracer.prototype.specularRays = function(pos, obj, ray) {
       var cos_theta_i, cos_theta_t, i, i_dot_n, n, n1, n2, r1, r2, ratio, reflectionDirection, reflectionPowerRatio, refractionDirection, refractionPowerRatio, sin_theta_t_2;
       n = obj.norm(pos);
-      i = pos.subtract(ray.line.anchor);
+      if (ray.isInside()) {
+        n = n.multiply(-1);
+      }
+      i = pos.subtract(ray.line.anchor).toUnitVector();
       n1 = ray.refraction;
-      n2 = obj.reflectionProperties.refractionIndex;
+      n2 = ray.isInside() ? 1 : obj.reflectionProperties.refractionIndex;
       i_dot_n = i.dot(n);
       cos_theta_i = -i_dot_n;
       reflectionDirection = i.add(n.multiply(2 * cos_theta_i));

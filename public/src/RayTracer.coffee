@@ -51,9 +51,8 @@ class RayTracer
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
       specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1)
-      if ray.refraction != 1
-        specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
-      color = color.add specularRefraction.multiply(refractedRay.power) #* 0.5
+      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
+      color = color.add specularRefraction.multiply(refractedRay.power)
     color
 
   #nv = obj.norm(pos)
@@ -67,11 +66,14 @@ class RayTracer
 
   specularRays: (pos, obj, ray) ->
     # the norm n (unit vector)
-    n = obj.norm(pos)
+    n = obj.norm(pos) #.multiply(-1).toUnitVector()
+    n = n.multiply(-1) if ray.isInside()
     # the view direction / input ray i (vector)
-    i = pos.subtract(ray.line.anchor)
+    i = pos.subtract(ray.line.anchor).toUnitVector()
+
     n1 = ray.refraction
-    n2 = obj.reflectionProperties.refractionIndex
+    n2 = if ray.isInside() then 1 else obj.reflectionProperties.refractionIndex
+
     # the angle theta θ = i*n
     i_dot_n = i.dot(n)
     cos_theta_i = -i_dot_n
