@@ -54,8 +54,8 @@ if ((typeof document !== "undefined" && document !== null) && (typeof $ !== "und
 
 this.initRayConfig = function() {
   return this.RayConfig = {
-    width: 400 * 2,
-    height: 300 * 2,
+    width: 800,
+    height: 600,
     illumination: true,
     reflection: ModuleId.B1,
     refraction: ModuleId.B1,

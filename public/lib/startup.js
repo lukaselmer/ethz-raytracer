@@ -1,7 +1,6 @@
 (function () {
     "use strict";
 
-    var width = RayConfig.width, height = RayConfig.width; // image size
 
     var canv, ctx, imgData; // canvas
     var imgBuffer; // canvas buffer
@@ -11,6 +10,7 @@
 
     // initialization when page loads
     function load() {
+        var width = RayConfig.width, height = RayConfig.height; // image size
         var windowHeight = $(window).height() - 80;
 
         document.getElementById("mainContent").style.width = width + "px";
@@ -55,8 +55,8 @@
     // reset all the pixel to white color
     function clearBuffer() {
         var curPixel = 0;
-        for (curPixelY = 0; curPixelY < height; ++curPixelY) {
-            for (curPixelX = 0; curPixelX < width; ++curPixelX) {
+        for (curPixelY = 0; curPixelY < RayConfig.height; ++curPixelY) {
+            for (curPixelX = 0; curPixelX < RayConfig.width; ++curPixelX) {
                 pixBuffer[4 * curPixel + 0] = 1.0;
                 pixBuffer[4 * curPixel + 1] = 1.0;
                 pixBuffer[4 * curPixel + 2] = 1.0;
@@ -76,7 +76,7 @@
 
     // render the new 50 lines of pixels
     function render(scene) {
-        if (curPixelY == height) return; // rendering done
+        if (curPixelY == RayConfig.height) return; // rendering done
         if (waitingForData > 0) { // textures are not loaded yet, wait for them
             console.log("Some data are not loaded yet, waiting for them before starting to render");
             setTimeout(function () {
@@ -86,9 +86,9 @@
         }
 
         var color = Vector.create([0, 0, 0]);
-        var curPixel = curPixelY * width;
+        var curPixel = curPixelY * RayConfig.width;
         for (var i = 0; i < 50; ++i, ++curPixelY) {
-            for (curPixelX = 0; curPixelX < width; ++curPixelX) {
+            for (curPixelX = 0; curPixelX < RayConfig.width; ++curPixelX) {
                 // compute the color for the current pixel
                 trace(scene, color, curPixelX, curPixelY);
 

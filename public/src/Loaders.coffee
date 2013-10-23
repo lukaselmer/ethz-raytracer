@@ -1,7 +1,7 @@
 # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
 this.loadScene = () ->
-  #fieldOfView = 40 / 180 * Math.PI
-  fieldOfView = 30 / 180 * Math.PI
+  fieldOfView = 40 / 180 * Math.PI
+  #fieldOfView = 30 / 180 * Math.PI
   camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height)
   #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 

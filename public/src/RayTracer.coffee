@@ -51,7 +51,7 @@ class RayTracer
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
       specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1)
-      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
+      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor) #unless ray.isInside()
       color = color.add specularRefraction.multiply(refractedRay.power)
     color
 
@@ -82,7 +82,7 @@ class RayTracer
     # === reflection ===
 
     # reflection ray r (unit vector)
-    reflectionDirection = i.add(n.multiply(2 * cos_theta_i))
+    reflectionDirection = i.add(n.multiply(2 * cos_theta_i)).toUnitVector()
 
     # === refraction ===
 
@@ -98,7 +98,7 @@ class RayTracer
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
 
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2)
-    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t))
+    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t)).toUnitVector()
 
     # Ok, both reflection and refraction exist => how is the ratio of the power? => frensel approximation
     # Note: we could also use the schlick's approximation which would be a little bit faster but less exact

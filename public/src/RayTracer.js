@@ -82,7 +82,7 @@ RayTracer = (function() {
     n2 = ray.isInside() ? 1 : obj.reflectionProperties.refractionIndex;
     i_dot_n = i.dot(n);
     cos_theta_i = -i_dot_n;
-    reflectionDirection = i.add(n.multiply(2 * cos_theta_i));
+    reflectionDirection = i.add(n.multiply(2 * cos_theta_i)).toUnitVector();
     if (n2 === Infinity) {
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
     }
@@ -92,7 +92,7 @@ RayTracer = (function() {
       return [new Ray($L(pos, reflectionDirection), n1, ray.power), null];
     }
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2);
-    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t));
+    refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t)).toUnitVector();
     r1 = Math.square((n1 * cos_theta_i - n2 * cos_theta_t) / (n1 * cos_theta_i + n2 * cos_theta_t));
     r2 = Math.square((n2 * cos_theta_i - n1 * cos_theta_t) / (n2 * cos_theta_i + n1 * cos_theta_t));
     reflectionPowerRatio = (r1 + r2) / 2;
