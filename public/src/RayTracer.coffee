@@ -40,7 +40,6 @@ class RayTracer
     return color if times <= 0
 
     color = color.add(this.reflectAndRefract(intersection, ray, times)) if RayConfig.reflection
-
     color
 
   reflectAndRefract: (intersection, ray, times) ->
@@ -55,8 +54,6 @@ class RayTracer
       specularRefraction = this.traceRec(refractedRay, times - 1)
       specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
       color = color.add specularRefraction.multiply(refractedRay.power)
-      console.rlog specularRefraction.multiply(refractedRay.power)
-      console.rlog refractedRay.power
     color
 
   specularRays: (intersection, ray) ->

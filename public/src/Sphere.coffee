@@ -32,11 +32,11 @@ class Sphere
 
     # t = (o-c)*d ± sqrt(r^2 - D^2)
     x = @radiusSquared - shortestDistanceFromCenterToRaySquared
-    return false if x < 0
+    return null if x < 0
     t1 = rayDistanceClosestToCenter - Math.sqrt(x)
     t2 = rayDistanceClosestToCenter + Math.sqrt(x)
-    return t2  if t1 < RayConfig.intersectionDelta
-    return t1  if t2 < RayConfig.intersectionDelta
+    return [t2, t2] if t1 < RayConfig.intersectionDelta
+    return [t1, t1] if t2 < RayConfig.intersectionDelta
     [t1, t2]
 
     ###intersection: (ray) ->

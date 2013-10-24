@@ -37,21 +37,4 @@ class Ellipsoid
     ((oc.e(2) * oc.e(2)) / @radius_y_2) +
     ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
 
-    under_root = ((b * b) - (4 * a * c))
-    return null if under_root < 0 or a is 0 or b is 0 # or c is 0
-
-    root = Math.sqrt(under_root)
-    t1 = (-b + root) / (2 * a)
-    t2 = (-b - root) / (2 * a)
-    return t2  if t1 < RayConfig.intersectionDelta
-    return t1  if t2 < RayConfig.intersectionDelta
-    [t1, t2]
-
-    #intersection: (ray) ->
-    #  i = this.intersects(ray)
-    #  return false unless i
-    #
-    #  intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-    #  normal = this.norm(intersectionPoint)
-    #  [i, intersectionPoint, normal]
-
+    Math.solveN2(a, b, c)
