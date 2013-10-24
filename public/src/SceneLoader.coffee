@@ -67,12 +67,12 @@ class SceneLoader
     # Boolean operations
     sphere1 = new Sphere($V([1.25, 1.25, 3]), 0.5, null)
     sphere2 = new Sphere($V([0.25, 1.25, 3]), 1, null)
-    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+    scene.addObject new MultipleObjectsIntersection(sphere1, sphere2,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
 
     sphere1 = new Sphere($V([0.5, 0, 3]), 0.7, null)
     sphere2 = new Sphere($V([-0.5, 0, 2.75]), 0.7, null)
-    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+    scene.addObject new MultipleObjectsIntersection(sphere1, sphere2,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
 
 

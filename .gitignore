@@ -23,7 +23,7 @@ public/src/RayConfig.js
 public/src/RayTracer.js
 public/src/Scene.js
 public/src/Sphere.js
-public/src/SphereSphereIntersection.js
+public/src/MultipleObjectsIntersection.js
 public/out/compiled.js
 public/out/compiled.js.map
 public/out/compiled.min.js.map

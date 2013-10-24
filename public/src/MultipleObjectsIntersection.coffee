@@ -1,20 +1,20 @@
-class SphereSphereIntersection
-  constructor: (@sphere1, @sphere2, @reflectionProperties) ->
+class MultipleObjectsIntersection
+  constructor: (@figure1, @figure2, @reflectionProperties) ->
 
   norm: (intersectionPoint, ray) ->
-    i1 = @sphere1.solutions(ray)
-    i2 = @sphere2.solutions(ray)
+    i1 = @figure1.solutions(ray)
+    i2 = @figure2.solutions(ray)
 
     [i11, i12] = i1
     [i11, i12] = [i12, i11] if i11 > i12
     [i21, i22] = i2
     [i21, i22] = [i22, i21] if i21 > i22
 
-    return if i21 < i11 then @sphere1.norm(intersectionPoint) else @sphere2.norm(intersectionPoint)
+    return if i21 < i11 then @figure1.norm(intersectionPoint) else @figure2.norm(intersectionPoint)
 
   solutions: (ray) ->
-    i1 = @sphere1.solutions(ray)
-    i2 = @sphere2.solutions(ray)
+    i1 = @figure1.solutions(ray)
+    i2 = @figure2.solutions(ray)
 
     return null unless i1 && i2
 
