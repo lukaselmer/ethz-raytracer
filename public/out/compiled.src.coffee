@@ -126,7 +126,7 @@ class Ellipsoid
     ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
 
     under_root = ((b * b) - (4 * a * c))
-    return null if under_root < 0 or a is 0 or b is 0 or c is 0
+    return null if under_root < 0 or a is 0 or b is 0 # or c is 0
 
     root = Math.sqrt(under_root)
     t1 = (-b + root) / (2 * a)
@@ -158,6 +158,7 @@ this.ModuleId =
   D1: `undefined` #... octree
   D2: `undefined` #... area light
   ALT: `undefined` #... alternative scene
+  SP1: `undefined` #... adds special objects to the scene
 
 if document? && $?
   $(document).ready ->
@@ -376,8 +377,8 @@ class RayTracer
 
     # Shadow
     int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
-    return new Color(0, 0, 0) if int.length > 1
-    return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
+    return new Color(0, 0, 0) if int.length > 1 || (int.length == 1 && int[0] != obj) # why is this necessary???
+    # Should be: return new Color(0, 0, 0) if int.length > 0
     #if int.length == 1 && int[0] == obj && false
     #  console.rlog obj
     #  console.rlog 'pos'
@@ -517,17 +518,20 @@ class SceneLoader
       new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32,
         Infinity))
     # center, x,y,z radii, reflection properties
+    #scene.addObject new Ellipsoid($V([1.25, 1.25, 3]), 0.5, 0.5, 0.5,
     scene.addObject new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0,
         1.5))
-    scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5,
-      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
-    scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5,
-      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+    if ModuleId.SP1
+      scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5,
+        new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
-    scene.addObject(new Sphere($V([0, 0, 3]), 0.5,
-      new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+      scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5,
+        new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+      scene.addObject(new Sphere($V([0, 0, 3]), 0.5,
+        new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
   loadB4: (scene) ->
     # Boolean operations

@@ -41,9 +41,11 @@ SceneLoader = (function() {
   SceneLoader.prototype.loadB3 = function(scene) {
     scene.addObject(new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
     scene.addObject(new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0, 1.5)));
-    scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
-    scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
-    return scene.addObject(new Sphere($V([0, 0, 3]), 0.5, new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+    if (ModuleId.SP1) {
+      scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+      scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+      return scene.addObject(new Sphere($V([0, 0, 3]), 0.5, new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+    }
   };
 
   SceneLoader.prototype.loadB4 = function(scene) {};
@@ -72,3 +74,7 @@ this.trace = function(scene, color, pixelX, pixelY) {
   rayTracer = new RayTracer(color, pixelX, pixelY, scene);
   return rayTracer.trace();
 };
+
+/*
+//@ sourceMappingURL=SceneLoader.map
+*/

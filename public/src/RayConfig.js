@@ -9,7 +9,8 @@ this.ModuleId = {
   C3: undefined,
   D1: undefined,
   D2: undefined,
-  ALT: undefined
+  ALT: undefined,
+  SP1: undefined
 };
 
 if ((typeof document !== "undefined" && document !== null) && (typeof $ !== "undefined" && $ !== null)) {
@@ -66,3 +67,7 @@ this.initRayConfig = function() {
 };
 
 initRayConfig();
+
+/*
+//@ sourceMappingURL=RayConfig.map
+*/

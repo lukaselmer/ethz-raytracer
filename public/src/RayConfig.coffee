@@ -9,6 +9,7 @@ this.ModuleId =
   D1: `undefined` #... octree
   D2: `undefined` #... area light
   ALT: `undefined` #... alternative scene
+  SP1: `undefined` #... adds special objects to the scene
 
 if document? && $?
   $(document).ready ->

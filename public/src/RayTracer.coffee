@@ -173,8 +173,8 @@ class RayTracer
 
     # Shadow
     int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
-    return new Color(0, 0, 0) if int.length > 1
-    return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
+    return new Color(0, 0, 0) if int.length > 1 || (int.length == 1 && int[0] != obj) # why is this necessary???
+    # Should be: return new Color(0, 0, 0) if int.length > 0
     #if int.length == 1 && int[0] == obj && false
     #  console.rlog obj
     #  console.rlog 'pos'
