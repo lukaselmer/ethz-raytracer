@@ -14,3 +14,13 @@ results
 
 npm-debug.log
 node_modules
+public/out/compiled.min.js
+public/out/compiled.src.js
+public/src/Cylinder.js
+public/src/Ellipsoid.js
+public/src/Intersection.js
+public/src/RayConfig.js
+public/src/RayTracer.js
+public/src/Scene.js
+public/src/Sphere.js
+public/src/SphereSphereIntersection.js
