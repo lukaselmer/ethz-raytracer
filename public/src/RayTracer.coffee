@@ -1,5 +1,5 @@
 class RayTracer
-  constructor: (@color, @pixelX, @pixelY, @scene) ->
+  constructor: (@pixelX, @pixelY, @scene) ->
 
   trace: () ->
     # 1. shoot a ray determined from the camera parameters and the pixel position in the image
@@ -20,7 +20,7 @@ class RayTracer
     averageColorVector = colors.map((c) ->
       c.toVector()).reduce((previous, current) ->
       previous.add(current)).multiply(1 / colors.length)
-    @color.setElements(averageColorVector.elements)
+    averageColorVector
 
   traceRec: (ray, times) ->
     color = new Color(0, 0, 0)

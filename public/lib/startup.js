@@ -86,13 +86,12 @@
             return;
         }
 
-        var color = Vector.create([0, 0, 0]);
         var curPixel = curPixelY * RayConfig.width;
         for (var i = 0; i < 50; ++i, ++curPixelY) {
             for (curPixelX = 0; curPixelX < RayConfig.width; ++curPixelX) {
                 // compute the color for the current pixel
-                var raytracer = new RayTracer(color, curPixelX, curPixelY, scene);
-                raytracer.trace();
+                var raytracer = new RayTracer(curPixelX, curPixelY, scene);
+                var color = raytracer.trace();
 
                 // copy the result in the buffer
                 pixBuffer[4 * curPixel + 0] = color.e(1);
