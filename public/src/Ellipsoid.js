@@ -16,7 +16,7 @@ Ellipsoid = (function() {
   Ellipsoid.prototype.norm = function(intersectionPoint) {
     var n, t;
     n = intersectionPoint.subtract(this.center);
-    t = $M([[2.0 / this.radius_x_2, 0, 0], [0, 2.0 / this.radius_y_2, 0], [0, 0, 2.0 / this.radius_z_2]]);
+    t = $M([[2 / this.radius_x_2, 0, 0], [0, 2 / this.radius_y_2, 0], [0, 0, 2 / this.radius_z_2]]);
     n = t.multiply(n);
     return n.toUnitVector();
   };
@@ -28,7 +28,7 @@ Ellipsoid = (function() {
     a = ((dir.e(1) * dir.e(1)) / this.radius_x_2) + ((dir.e(2) * dir.e(2)) / this.radius_y_2) + ((dir.e(3) * dir.e(3)) / this.radius_z_2);
     b = ((2 * oc.e(1) * dir.e(1)) / this.radius_x_2) + ((2 * oc.e(2) * dir.e(2)) / this.radius_y_2) + ((2 * oc.e(3) * dir.e(3)) / this.radius_z_2);
     c = ((oc.e(1) * oc.e(1)) / this.radius_x_2) + ((oc.e(2) * oc.e(2)) / this.radius_y_2) + ((oc.e(3) * oc.e(3)) / this.radius_z_2) - 1;
-    under_root = (b * b) - (4.0 * a * c);
+    under_root = (b * b) - (4 * a * c);
     if (under_root < 0 || a === 0 || b === 0 || c === 0) {
       return null;
     }

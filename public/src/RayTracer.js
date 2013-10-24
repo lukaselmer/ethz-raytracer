@@ -156,13 +156,24 @@ RayTracer = (function() {
 
 
   RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
-    var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
+    var E, ambient, ambientColor, diffuse, frac, int, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
     nv = obj.norm(pos);
     w = ray.line.direction;
     wl = light.location.subtract(pos).toUnitVector();
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
-    if (this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0) {
+    int = this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1));
+    if (int.length > 1) {
       return new Color(0, 0, 0);
+    }
+    if (int.length === 1 && int[0] === obj) {
+      console.rlog(obj);
+      console.rlog('pos');
+      console.rlog(pos);
+      console.rlog('w');
+      console.rlog(w);
+      console.rlog('nv');
+      console.rlog(nv);
+      console.rlog(ray);
     }
     ambient = light.intensity.ambient;
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);

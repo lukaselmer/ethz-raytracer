@@ -96,55 +96,38 @@
       this.radius_z = radius_z;
       this.reflectionProperties = reflectionProperties;
       this.radius_x_2 = Math.square(this.radius_x);
+      this.radius_y_2 = Math.square(this.radius_y);
       this.radius_z_2 = Math.square(this.radius_z);
-      /*
-      @radius_x_2 = Math.square(@radius_x)
-      @radius_y_2 = Math.square(@radius_y)
-      @radius_z_2 = Math.square(@radius_z)
-      */
-
     }
 
     Cylinder.prototype.norm = function(intersectionPoint) {
-      /*
-      int = $V([((if @fixed_x then 0 else intersectionPoint.e(1))),
-                ((if @fixed_y then 0 else intersectionPoint.e(2))),
-                ((if @fixed_z then 0 else intersectionPoint.e(3)))])
-      normal = int.subtract(@axis_line)
-      normal.toUnitVector()
-      */
-
+      var intersection, n;
+      intersection = $V([(this.fixed_x ? 0 : (intersectionPoint.e(1)) / this.radius_x_2), (this.fixed_y ? 0 : (intersectionPoint.e(2)) / this.radius_y_2), (this.fixed_z ? 0 : (intersectionPoint.e(3)) / this.radius_z_2)]);
+      n = intersection.subtract(this.axis_line);
+      return n.toUnitVector();
     };
 
     Cylinder.prototype.intersects = function(ray) {
-      return null;
-      /*
-      oc = ray.line.anchor.subtract(@axis_line)
-      dir = ray.line.direction.toUnitVector()
-      
-      a = ((if @fixed_x then 0 else ((dir.e(1) * dir.e(1)) / @radius_x_2))) +
-      ((if @fixed_y then 0 else (dir.e(2) * dir.e(2) / @radius_y_2))) +
-      ((if @fixed_z then 0 else dir.e(3) * dir.e(3) / @radius_z_2))
-      
-      b = ((if @fixed_x then 0 else ((2 * oc.e(1) * dir.e(1)) / @radius_x_2))) +
-      ((if @fixed_y then 0 else ((2 * oc.e(2) * dir.e(2)) / @radius_y_2))) +
-      ((if @fixed_z then 0 else ((2 * oc.e(3) * dir.e(3)) / @radius_z_2)))
-      
-      c = ((if @fixed_x then 0 else ((oc.e(1) * oc.e(1)) / @radius_x_2))) +
-      ((if @fixed_y then 0 else ((oc.e(2) * oc.e(2)) / @radius_y_2))) +
-      ((if @fixed_z then 0 else ((oc.e(3) * oc.e(3)) / @radius_z_2))) - 1
-      
-      under_root = (Math.square(b) - (4.0 * a * c))
-      return null if under_root < 0 || a == 0 || b == 0 || c == 0
-      
-      root = Math.sqrt(under_root)
-      t1 = (-b + root) / (2 * a)
-      t2 = (-b - root) / (2 * a)
-      return t2  if t1 < RayConfig.intersectionDelta
-      return t1  if t2 < RayConfig.intersectionDelta
-      Math.min t1, t2
-      */
-
+      var a, b, c, dir, oc, root, t1, t2, under_root;
+      oc = ray.line.anchor.subtract(this.axis_line);
+      dir = ray.line.direction.toUnitVector();
+      a = (this.fixed_x ? 0 : (dir.e(1) * dir.e(1)) / this.radius_x_2) + (this.fixed_y ? 0 : dir.e(2) * dir.e(2) / this.radius_y_2) + (this.fixed_z ? 0 : dir.e(3) * dir.e(3) / this.radius_z_2);
+      b = (this.fixed_x ? 0 : (2 * oc.e(1) * dir.e(1)) / this.radius_x_2) + (this.fixed_y ? 0 : (2 * oc.e(2) * dir.e(2)) / this.radius_y_2) + (this.fixed_z ? 0 : (2 * oc.e(3) * dir.e(3)) / this.radius_z_2);
+      c = (this.fixed_x ? 0 : (oc.e(1) * oc.e(1)) / this.radius_x_2) + (this.fixed_y ? 0 : (oc.e(2) * oc.e(2)) / this.radius_y_2) + (this.fixed_z ? 0 : (oc.e(3) * oc.e(3)) / this.radius_z_2) - 1;
+      under_root = Math.square(b) - (4 * a * c);
+      if (under_root < 0 || a === 0 || b === 0 || c === 0) {
+        return null;
+      }
+      root = Math.sqrt(under_root);
+      t1 = (-b + root) / (2 * a);
+      t2 = (-b - root) / (2 * a);
+      if (t1 < RayConfig.intersectionDelta) {
+        return t2;
+      }
+      if (t2 < RayConfig.intersectionDelta) {
+        return t1;
+      }
+      return Math.min(t1, t2);
     };
 
     return Cylinder;
@@ -166,7 +149,7 @@
     Ellipsoid.prototype.norm = function(intersectionPoint) {
       var n, t;
       n = intersectionPoint.subtract(this.center);
-      t = $M([[2.0 / this.radius_x_2, 0, 0], [0, 2.0 / this.radius_y_2, 0], [0, 0, 2.0 / this.radius_z_2]]);
+      t = $M([[2 / this.radius_x_2, 0, 0], [0, 2 / this.radius_y_2, 0], [0, 0, 2 / this.radius_z_2]]);
       n = t.multiply(n);
       return n.toUnitVector();
     };
@@ -178,7 +161,7 @@
       a = ((dir.e(1) * dir.e(1)) / this.radius_x_2) + ((dir.e(2) * dir.e(2)) / this.radius_y_2) + ((dir.e(3) * dir.e(3)) / this.radius_z_2);
       b = ((2 * oc.e(1) * dir.e(1)) / this.radius_x_2) + ((2 * oc.e(2) * dir.e(2)) / this.radius_y_2) + ((2 * oc.e(3) * dir.e(3)) / this.radius_z_2);
       c = ((oc.e(1) * oc.e(1)) / this.radius_x_2) + ((oc.e(2) * oc.e(2)) / this.radius_y_2) + ((oc.e(3) * oc.e(3)) / this.radius_z_2) - 1;
-      under_root = (b * b) - (4.0 * a * c);
+      under_root = (b * b) - (4 * a * c);
       if (under_root < 0 || a === 0 || b === 0 || c === 0) {
         return null;
       }
@@ -458,13 +441,24 @@
 
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
-      var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
+      var E, ambient, ambientColor, diffuse, frac, int, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
       nv = obj.norm(pos);
       w = ray.line.direction;
       wl = light.location.subtract(pos).toUnitVector();
       wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
-      if (this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0) {
+      int = this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1));
+      if (int.length > 1) {
         return new Color(0, 0, 0);
+      }
+      if (int.length === 1 && int[0] === obj) {
+        console.rlog(obj);
+        console.rlog('pos');
+        console.rlog(pos);
+        console.rlog('w');
+        console.rlog(w);
+        console.rlog('nv');
+        console.rlog(nv);
+        console.rlog(ray);
       }
       ambient = light.intensity.ambient;
       ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
@@ -620,10 +614,10 @@
     };
 
     SceneLoader.prototype.loadB3 = function(scene) {
-      scene.addObject(new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
+      scene.addObject(new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 0.1, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
       scene.addObject(new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0, 1.5)));
       scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
-      return scene.addObject(new Sphere($V([-1.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
+      return scene.addObject(new Sphere($V([0, 0, 3]), 0.5, new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
     };
 
     SceneLoader.prototype.loadB4 = function(scene) {};

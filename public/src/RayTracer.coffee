@@ -172,7 +172,18 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0
+    int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
+    return new Color(0, 0, 0) if int.length > 1
+    #return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
+    if int.length == 1 && int[0] == obj
+      console.rlog obj
+      console.rlog 'pos'
+      console.rlog pos
+      console.rlog 'w'
+      console.rlog w
+      console.rlog 'nv'
+      console.rlog nv
+      console.rlog ray
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)

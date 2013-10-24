@@ -9,9 +9,9 @@ class Ellipsoid
   norm: (intersectionPoint) ->
     n = intersectionPoint.subtract(@center)
     t = $M([
-      [2.0 / @radius_x_2, 0, 0],
-      [0, 2.0 / @radius_y_2, 0],
-      [0, 0, 2.0 / @radius_z_2]
+      [2 / @radius_x_2, 0, 0],
+      [0, 2 / @radius_y_2, 0],
+      [0, 0, 2 / @radius_z_2]
     ])
     n = t.multiply(n)
     n.toUnitVector()
@@ -29,7 +29,7 @@ class Ellipsoid
     ((oc.e(2) * oc.e(2)) / @radius_y_2) +
     ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
 
-    under_root = ((b * b) - (4.0 * a * c))
+    under_root = ((b * b) - (4 * a * c))
     return null if under_root < 0 or a is 0 or b is 0 or c is 0
 
     root = Math.sqrt(under_root)

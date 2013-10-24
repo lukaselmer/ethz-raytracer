@@ -47,31 +47,19 @@ class Color
     @val.dup()
 
 class Cylinder
-  #(@radius_x, @radius_z, @reflectionProperties) ->
   constructor: (@axis_line, @fixed_x, @fixed_y, @fixed_z, @radius_x, @radius_y, @radius_z, @reflectionProperties) ->
-    @radius_x_2 = Math.square(@radius_x)
-    @radius_z_2 = Math.square(@radius_z)
-
-    ###
     @radius_x_2 = Math.square(@radius_x)
     @radius_y_2 = Math.square(@radius_y)
     @radius_z_2 = Math.square(@radius_z)
-    ###
 
   norm: (intersectionPoint) ->
-    ###
-    int = $V([((if @fixed_x then 0 else intersectionPoint.e(1))),
-              ((if @fixed_y then 0 else intersectionPoint.e(2))),
-              ((if @fixed_z then 0 else intersectionPoint.e(3)))])
-    normal = int.subtract(@axis_line)
-    normal.toUnitVector()
-    ###
+    intersection = $V([((if @fixed_x then 0 else (intersectionPoint.e(1)) / @radius_x_2)),
+              ((if @fixed_y then 0 else (intersectionPoint.e(2)) / @radius_y_2)),
+              ((if @fixed_z then 0 else (intersectionPoint.e(3)) / @radius_z_2))])
+    n = intersection.subtract(@axis_line)
+    n.toUnitVector()
 
   intersects: (ray) ->
-    null
-
-
-    ###
     oc = ray.line.anchor.subtract(@axis_line)
     dir = ray.line.direction.toUnitVector()
 
@@ -87,7 +75,7 @@ class Cylinder
     ((if @fixed_y then 0 else ((oc.e(2) * oc.e(2)) / @radius_y_2))) +
     ((if @fixed_z then 0 else ((oc.e(3) * oc.e(3)) / @radius_z_2))) - 1
 
-    under_root = (Math.square(b) - (4.0 * a * c))
+    under_root = (Math.square(b) - (4 * a * c))
     return null if under_root < 0 || a == 0 || b == 0 || c == 0
 
     root = Math.sqrt(under_root)
@@ -96,7 +84,7 @@ class Cylinder
     return t2  if t1 < RayConfig.intersectionDelta
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
-    ###
+
 
 # From: http://cudaopencl.blogspot.ch/2012/12/ellipsoids-finally-added-to-ray-tracing.html#
 
@@ -109,9 +97,9 @@ class Ellipsoid
   norm: (intersectionPoint) ->
     n = intersectionPoint.subtract(@center)
     t = $M([
-      [2.0 / @radius_x_2, 0, 0],
-      [0, 2.0 / @radius_y_2, 0],
-      [0, 0, 2.0 / @radius_z_2]
+      [2 / @radius_x_2, 0, 0],
+      [0, 2 / @radius_y_2, 0],
+      [0, 0, 2 / @radius_z_2]
     ])
     n = t.multiply(n)
     n.toUnitVector()
@@ -129,7 +117,7 @@ class Ellipsoid
     ((oc.e(2) * oc.e(2)) / @radius_y_2) +
     ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
 
-    under_root = ((b * b) - (4.0 * a * c))
+    under_root = ((b * b) - (4 * a * c))
     return null if under_root < 0 or a is 0 or b is 0 or c is 0
 
     root = Math.sqrt(under_root)
@@ -379,7 +367,18 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0
+    int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
+    return new Color(0, 0, 0) if int.length > 1
+    #return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
+    if int.length == 1 && int[0] == obj
+      console.rlog obj
+      console.rlog 'pos'
+      console.rlog pos
+      console.rlog 'w'
+      console.rlog w
+      console.rlog 'nv'
+      console.rlog nv
+      console.rlog ray
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
@@ -504,7 +503,9 @@ class SceneLoader
     # Quadrics
 
     # axis line, fixed x,y,z axis, radii, reflection properties
-    scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1,
+    #scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1,
+    #scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 3, 0, 1,
+    scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 0.1,
       new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32,
         Infinity))
     # center, x,y,z radii, reflection properties
@@ -515,7 +516,7 @@ class SceneLoader
     scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
-    scene.addObject(new Sphere($V([-1.25, 1.25, 3]), 0.5,
+    scene.addObject(new Sphere($V([0, 0, 3]), 0.5,
       new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
   loadB4: (scene) ->
