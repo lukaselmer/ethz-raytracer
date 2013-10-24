@@ -7,6 +7,14 @@ class Ellipsoid
     @radius_z_2 = Math.square @radius_z
 
   norm: (intersectionPoint) ->
+    # This is the naive way:
+    # zz = intersectionPoint.subtract(@center)
+    # nx = 2 * zz.e(1) / @radius_x_2
+    # ny = 2 * zz.e(2) / @radius_y_2
+    # nz = 2 * zz.e(3) / @radius_z_2
+    # return $V([nx, ny, nz]).toUnitVector()
+
+    # And this is the right way
     n = intersectionPoint.subtract(@center)
     t = $M([
       [2 / @radius_x_2, 0, 0],

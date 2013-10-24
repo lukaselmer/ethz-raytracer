@@ -165,15 +165,8 @@ RayTracer = (function() {
     if (int.length > 1) {
       return new Color(0, 0, 0);
     }
-    if (int.length === 1 && int[0] === obj) {
-      console.rlog(obj);
-      console.rlog('pos');
-      console.rlog(pos);
-      console.rlog('w');
-      console.rlog(w);
-      console.rlog('nv');
-      console.rlog(nv);
-      console.rlog(ray);
+    if (int.length === 1 && int[0] !== obj) {
+      return new Color(0, 0, 0);
     }
     ambient = light.intensity.ambient;
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);

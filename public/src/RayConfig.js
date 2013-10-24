@@ -61,7 +61,7 @@ this.initRayConfig = function() {
     refraction: ModuleId.B1,
     antialiasing: ModuleId.B2 ? 4 : 1,
     recDepth: 5,
-    intersectionDelta: 0.0000000001
+    intersectionDelta: 0.000001
   };
 };
 

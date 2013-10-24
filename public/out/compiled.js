@@ -280,7 +280,7 @@
       refraction: ModuleId.B1,
       antialiasing: ModuleId.B2 ? 4 : 1,
       recDepth: 5,
-      intersectionDelta: 0.0000000001
+      intersectionDelta: 0.000001
     };
   };
 
@@ -450,15 +450,8 @@
       if (int.length > 1) {
         return new Color(0, 0, 0);
       }
-      if (int.length === 1 && int[0] === obj) {
-        console.rlog(obj);
-        console.rlog('pos');
-        console.rlog(pos);
-        console.rlog('w');
-        console.rlog(w);
-        console.rlog('nv');
-        console.rlog(nv);
-        console.rlog(ray);
+      if (int.length === 1 && int[0] !== obj) {
+        return new Color(0, 0, 0);
       }
       ambient = light.intensity.ambient;
       ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient);
@@ -614,8 +607,9 @@
     };
 
     SceneLoader.prototype.loadB3 = function(scene) {
-      scene.addObject(new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 0.1, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
+      scene.addObject(new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1, new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)));
       scene.addObject(new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0, 1.5)));
+      scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
       scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
       return scene.addObject(new Sphere($V([0, 0, 3]), 0.5, new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)));
     };

@@ -95,6 +95,14 @@ class Ellipsoid
     @radius_z_2 = Math.square @radius_z
 
   norm: (intersectionPoint) ->
+    # This is the naive way:
+    # zz = intersectionPoint.subtract(@center)
+    # nx = 2 * zz.e(1) / @radius_x_2
+    # ny = 2 * zz.e(2) / @radius_y_2
+    # nz = 2 * zz.e(3) / @radius_z_2
+    # return $V([nx, ny, nz]).toUnitVector()
+
+    # And this is the right way
     n = intersectionPoint.subtract(@center)
     t = $M([
       [2 / @radius_x_2, 0, 0],
@@ -189,7 +197,7 @@ this.initRayConfig = () ->
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
     recDepth: 5
-    intersectionDelta: 0.0000000001
+    intersectionDelta: 0.000001
 
 initRayConfig()
 
@@ -369,16 +377,16 @@ class RayTracer
     # Shadow
     int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
     return new Color(0, 0, 0) if int.length > 1
-    #return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
-    if int.length == 1 && int[0] == obj
-      console.rlog obj
-      console.rlog 'pos'
-      console.rlog pos
-      console.rlog 'w'
-      console.rlog w
-      console.rlog 'nv'
-      console.rlog nv
-      console.rlog ray
+    return new Color(0, 0, 0) if int.length == 1 && int[0] != obj # why is this necessary???
+    #if int.length == 1 && int[0] == obj && false
+    #  console.rlog obj
+    #  console.rlog 'pos'
+    #  console.rlog pos
+    #  console.rlog 'w'
+    #  console.rlog w
+    #  console.rlog 'nv'
+    #  console.rlog nv
+    #  console.rlog ray
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
@@ -503,15 +511,17 @@ class SceneLoader
     # Quadrics
 
     # axis line, fixed x,y,z axis, radii, reflection properties
-    #scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1,
+    #scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 0.1,
     #scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 3, 0, 1,
-    scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 0.1,
+    scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1,
       new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32,
         Infinity))
     # center, x,y,z radii, reflection properties
     scene.addObject new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0,
         1.5))
+    scene.addObject(new Sphere($V([2.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
 
     scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
