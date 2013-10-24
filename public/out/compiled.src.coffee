@@ -228,23 +228,23 @@ class RayTracer
 
   traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
+    
+    return color unless intersection
 
-    if intersection
-      pos = intersection[0]
-      obj = intersection[1]
+    pos = intersection[0]
+    obj = intersection[1]
 
-      globalAmbient = @scene.globalAmbient
-      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
-      color = color.add(globalAmbientColor)
+    globalAmbient = @scene.globalAmbient
+    globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
+    color = color.add(globalAmbientColor)
 
-      if RayConfig.illumination
-        for light in @scene.lights
-          color = color.add(this.illuminate(pos, obj, ray, light))
+    if RayConfig.illumination
+      for light in @scene.lights
+        color = color.add(this.illuminate(pos, obj, ray, light))
 
-      return color if times <= 0
+    return color if times <= 0
 
-      color = color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
-    color
+    color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
 
   reflectAndRefract: (pos, obj, ray, times) ->
     [reflectedRay, refractedRay] = this.specularRays(pos, obj, ray)
@@ -376,18 +376,7 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
-    return new Color(0, 0, 0) if int.length > 1 || (int.length == 1 && int[0] != obj) # why is this necessary???
-    # Should be: return new Color(0, 0, 0) if int.length > 0
-    #if int.length == 1 && int[0] == obj && false
-    #  console.rlog obj
-    #  console.rlog 'pos'
-    #  console.rlog pos
-    #  console.rlog 'w'
-    #  console.rlog w
-    #  console.rlog 'nv'
-    #  console.rlog nv
-    #  console.rlog ray
+    return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(pos, wl), ray.refraction, 1))
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
@@ -453,9 +442,6 @@ class Scene
 
   addObject: (object) ->
     @objects.push object
-
-  intersections: (ray) ->
-    object for object in @objects when object.intersects(ray)
 
   firstIntersection: (ray) ->
     min = Infinity
@@ -535,6 +521,18 @@ class SceneLoader
 
   loadB4: (scene) ->
     # Boolean operations
+    sphere1 = new Sphere($V([1.25, 1.25, 3]), 0.5, null)
+    sphere2 = new Sphere($V([0.25, 1.25, 3]), 1, null)
+    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
+
+    sphere1 = new Sphere($V([0.5, 0, 3]), 0.6, null)
+    sphere2 = new Sphere($V([-0.5, 0, 3]), 0.6, null)
+    sphere1 = new Sphere($V([0, 0, 3]), 0.6, null)
+    sphere2 = new Sphere($V([0, 0, 4]), 0.6, null)
+    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
+
 
   loadAlternative: (scene) ->
     # alternative scene
@@ -604,6 +602,26 @@ class Sphere
     return t2  if t1 < RayConfig.intersectionDelta
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
+
+
+class SphereSphereIntersection
+  constructor: (@sphere1, @sphere2, @reflectionProperties) ->
+
+  norm: (intersectionPoint) ->
+    s1 = @sphere1.intersects(@ray)
+    s2 = @sphere2.intersects(@ray)
+    if s1 > s2
+      @sphere1.norm(intersectionPoint)
+    else
+      @sphere2.norm(intersectionPoint)
+
+  intersects: (ray) ->
+    @ray = ray
+    s1 = @sphere1.intersects(ray)
+    s2 = @sphere2.intersects(ray)
+
+    return false unless s1 && s2
+    return Math.min(s1, s2)
 
 
 ### Random log ###

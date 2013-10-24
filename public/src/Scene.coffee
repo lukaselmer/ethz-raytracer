@@ -9,9 +9,6 @@ class Scene
   addObject: (object) ->
     @objects.push object
 
-  intersections: (ray) ->
-    object for object in @objects when object.intersects(ray)
-
   firstIntersection: (ray) ->
     min = Infinity
     ret = null

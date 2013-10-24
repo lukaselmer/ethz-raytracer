@@ -65,6 +65,18 @@ class SceneLoader
 
   loadB4: (scene) ->
     # Boolean operations
+    sphere1 = new Sphere($V([1.25, 1.25, 3]), 0.5, null)
+    sphere2 = new Sphere($V([0.25, 1.25, 3]), 1, null)
+    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
+
+    sphere1 = new Sphere($V([0.5, 0, 3]), 0.6, null)
+    sphere2 = new Sphere($V([-0.5, 0, 3]), 0.6, null)
+    sphere1 = new Sphere($V([0, 0, 3]), 0.6, null)
+    sphere2 = new Sphere($V([0, 0, 4]), 0.6, null)
+    scene.addObject new SphereSphereIntersection(sphere1, sphere2,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
+
 
   loadAlternative: (scene) ->
     # alternative scene

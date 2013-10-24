@@ -24,23 +24,23 @@ class RayTracer
 
   traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
+    
+    return color unless intersection
 
-    if intersection
-      pos = intersection[0]
-      obj = intersection[1]
+    pos = intersection[0]
+    obj = intersection[1]
 
-      globalAmbient = @scene.globalAmbient
-      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
-      color = color.add(globalAmbientColor)
+    globalAmbient = @scene.globalAmbient
+    globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
+    color = color.add(globalAmbientColor)
 
-      if RayConfig.illumination
-        for light in @scene.lights
-          color = color.add(this.illuminate(pos, obj, ray, light))
+    if RayConfig.illumination
+      for light in @scene.lights
+        color = color.add(this.illuminate(pos, obj, ray, light))
 
-      return color if times <= 0
+    return color if times <= 0
 
-      color = color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
-    color
+    color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
 
   reflectAndRefract: (pos, obj, ray, times) ->
     [reflectedRay, refractedRay] = this.specularRays(pos, obj, ray)
@@ -172,18 +172,7 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    int = @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1))
-    return new Color(0, 0, 0) if int.length > 1 || (int.length == 1 && int[0] != obj) # why is this necessary???
-    # Should be: return new Color(0, 0, 0) if int.length > 0
-    #if int.length == 1 && int[0] == obj && false
-    #  console.rlog obj
-    #  console.rlog 'pos'
-    #  console.rlog pos
-    #  console.rlog 'w'
-    #  console.rlog w
-    #  console.rlog 'nv'
-    #  console.rlog nv
-    #  console.rlog ray
+    return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(pos, wl), ray.refraction, 1))
 
     ambient = light.intensity.ambient
     ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)

@@ -1,5 +1,5 @@
 (function() {
-  var Camera, Color, Cylinder, Ellipsoid, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, SceneLoader, Sphere;
+  var Camera, Color, Cylinder, Ellipsoid, Light, LightIntensity, Ray, RayTracer, ReflectionProperty, Scene, SceneLoader, Sphere, SphereSphereIntersection;
 
   Camera = (function() {
     function Camera(position, direction, upDirection, distance, fieldOfView, width, height) {
@@ -317,27 +317,27 @@
     RayTracer.prototype.traceRec = function(ray, color, times) {
       var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref;
       intersection = this.scene.firstIntersection(ray);
-      if (intersection) {
-        pos = intersection[0];
-        obj = intersection[1];
-        globalAmbient = this.scene.globalAmbient;
-        globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
-        color = color.add(globalAmbientColor);
-        if (RayConfig.illumination) {
-          _ref = this.scene.lights;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            light = _ref[_i];
-            color = color.add(this.illuminate(pos, obj, ray, light));
-          }
-        }
-        if (times <= 0) {
-          return color;
-        }
-        if (RayConfig.reflection) {
-          color = color.add(this.reflectAndRefract(pos, obj, ray, times));
+      if (!intersection) {
+        return color;
+      }
+      pos = intersection[0];
+      obj = intersection[1];
+      globalAmbient = this.scene.globalAmbient;
+      globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
+      color = color.add(globalAmbientColor);
+      if (RayConfig.illumination) {
+        _ref = this.scene.lights;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          light = _ref[_i];
+          color = color.add(this.illuminate(pos, obj, ray, light));
         }
       }
-      return color;
+      if (times <= 0) {
+        return color;
+      }
+      if (RayConfig.reflection) {
+        return color.add(this.reflectAndRefract(pos, obj, ray, times));
+      }
     };
 
     RayTracer.prototype.reflectAndRefract = function(pos, obj, ray, times) {
@@ -442,13 +442,12 @@
 
 
     RayTracer.prototype.illuminate = function(pos, obj, ray, light) {
-      var E, ambient, ambientColor, diffuse, frac, int, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
+      var E, ambient, ambientColor, diffuse, frac, kd, ks, n, nv, specularHighlights, spepcularIntensity, w, wl, wr;
       nv = obj.norm(pos);
       w = ray.line.direction;
       wl = light.location.subtract(pos).toUnitVector();
       wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector();
-      int = this.scene.intersections(new Ray($L(pos, wl), ray.refraction, 1));
-      if (int.length > 1 || (int.length === 1 && int[0] !== obj)) {
+      if (this.scene.firstIntersection(new Ray($L(pos, wl), ray.refraction, 1))) {
         return new Color(0, 0, 0);
       }
       ambient = light.intensity.ambient;
@@ -534,19 +533,6 @@
       return this.objects.push(object);
     };
 
-    Scene.prototype.intersections = function(ray) {
-      var object, _i, _len, _ref, _results;
-      _ref = this.objects;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        object = _ref[_i];
-        if (object.intersects(ray)) {
-          _results.push(object);
-        }
-      }
-      return _results;
-    };
-
     Scene.prototype.firstIntersection = function(ray) {
       var min, ret;
       min = Infinity;
@@ -614,7 +600,17 @@
       }
     };
 
-    SceneLoader.prototype.loadB4 = function(scene) {};
+    SceneLoader.prototype.loadB4 = function(scene) {
+      var sphere1, sphere2;
+      sphere1 = new Sphere($V([1.25, 1.25, 3]), 0.5, null);
+      sphere2 = new Sphere($V([0.25, 1.25, 3]), 1, null);
+      scene.addObject(new SphereSphereIntersection(sphere1, sphere2, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity)));
+      sphere1 = new Sphere($V([0.5, 0, 3]), 0.6, null);
+      sphere2 = new Sphere($V([-0.5, 0, 3]), 0.6, null);
+      sphere1 = new Sphere($V([0, 0, 3]), 0.6, null);
+      sphere2 = new Sphere($V([0, 0, 4]), 0.6, null);
+      return scene.addObject(new SphereSphereIntersection(sphere1, sphere2, new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity)));
+    };
 
     SceneLoader.prototype.loadAlternative = function(scene) {
       var c;
@@ -684,6 +680,39 @@
     };
 
     return Sphere;
+
+  })();
+
+  SphereSphereIntersection = (function() {
+    function SphereSphereIntersection(sphere1, sphere2, reflectionProperties) {
+      this.sphere1 = sphere1;
+      this.sphere2 = sphere2;
+      this.reflectionProperties = reflectionProperties;
+    }
+
+    SphereSphereIntersection.prototype.norm = function(intersectionPoint) {
+      var s1, s2;
+      s1 = this.sphere1.intersects(this.ray);
+      s2 = this.sphere2.intersects(this.ray);
+      if (s1 > s2) {
+        return this.sphere1.norm(intersectionPoint);
+      } else {
+        return this.sphere2.norm(intersectionPoint);
+      }
+    };
+
+    SphereSphereIntersection.prototype.intersects = function(ray) {
+      var s1, s2;
+      this.ray = ray;
+      s1 = this.sphere1.intersects(ray);
+      s2 = this.sphere2.intersects(ray);
+      if (!(s1 && s2)) {
+        return false;
+      }
+      return Math.min(s1, s2);
+    };
+
+    return SphereSphereIntersection;
 
   })();
 
