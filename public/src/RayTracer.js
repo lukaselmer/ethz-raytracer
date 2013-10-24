@@ -181,11 +181,13 @@ RayTracer = (function() {
   };
 
   RayTracer.prototype.castRays = function(antialiasing) {
-    var camera, h, w, _i, _results,
+    var antialiasing_translation_mean, camera, h, w, _i, _results,
       _this = this;
+    camera = this.scene.camera;
     camera = this.scene.camera;
     w = camera.width * antialiasing;
     h = camera.height * antialiasing;
+    antialiasing_translation_mean = (1 + antialiasing) / 2;
     return (function() {
       _results = [];
       for (var _i = 1; 1 <= antialiasing ? _i <= antialiasing : _i >= antialiasing; 1 <= antialiasing ? _i++ : _i--){ _results.push(_i); }
@@ -197,11 +199,13 @@ RayTracer = (function() {
         for (var _i = 1; 1 <= antialiasing ? _i <= antialiasing : _i >= antialiasing; 1 <= antialiasing ? _i++ : _i--){ _results.push(_i); }
         return _results;
       }).apply(this).map(function(j) {
-        var centerPixelX, centerPixelY, rayDirection;
-        centerPixelX = (_this.pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight;
-        centerPixelY = (-_this.pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth;
-        rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(camera.rightDirection.multiply(centerPixelY)).subtract(camera.position);
-        return new Ray($L(camera.position, rayDirection), 1, 1);
+        var direction, p, pixelX, pixelY;
+        pixelX = (_this.pixelX + i / antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2);
+        pixelY = ((_this.pixelY + j / antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1;
+        p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight));
+        p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth));
+        direction = p.subtract(camera.position).toUnitVector();
+        return new Ray($L(camera.position, direction), 1, 1);
       });
     }).reduce(function(a, b) {
       return a.concat(b);
@@ -211,3 +215,5 @@ RayTracer = (function() {
   return RayTracer;
 
 })();
+
+this.RayTracer = RayTracer;

@@ -1,2 +1,2 @@
 class Light
-  constructor: (@color, @location, @intensity) ->
+  constructor: (@location, @color, @intensity) ->

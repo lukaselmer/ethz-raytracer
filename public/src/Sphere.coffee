@@ -6,9 +6,6 @@ class Sphere
     intersectionPoint.subtract(@center).toUnitVector()
 
   intersects: (ray) ->
-    console.setRlog()
-    #console.rlog ""
-
     o = ray.line.anchor
     d = ray.line.direction
     c = @center

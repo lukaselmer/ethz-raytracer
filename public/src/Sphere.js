@@ -15,7 +15,6 @@ Sphere = (function() {
 
   Sphere.prototype.intersects = function(ray) {
     var c, c_minus_o, d, distSquared, o, rayDistanceClosestToCenter, shortestDistanceFromCenterToRaySquared, t1, t2, x;
-    console.setRlog();
     o = ray.line.anchor;
     d = ray.line.direction;
     c = this.center;

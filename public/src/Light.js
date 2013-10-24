@@ -2,9 +2,9 @@
 var Light;
 
 Light = (function() {
-  function Light(color, location, intensity) {
-    this.color = color;
+  function Light(location, color, intensity) {
     this.location = location;
+    this.color = color;
     this.intensity = intensity;
   }
 

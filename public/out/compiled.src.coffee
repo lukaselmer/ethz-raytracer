@@ -4,19 +4,20 @@ class Camera
 
   calibrateCamera: () ->
     @direction = @direction.toUnitVector()
-    @rightDirection = @direction.cross(@upDirection).toUnitVector()
-    @upDirection = @rightDirection.cross(@direction).toUnitVector()
+    @rightDirection = @direction.cross(@upDirection) #.toUnitVector()
+    #@upDirection = @rightDirection.cross(@direction).toUnitVector()
     @imagePaneHeight = 2 * Math.tan(@fieldOfView / 2) * @distance
     @imagePaneWidth = @imagePaneHeight / @height * @width
 
     @imageCenter = @position.add(@direction.multiply(@distance))
-    @imageTop = @imageCenter.add(@upDirection.multiply(@imagePaneHeight / 2))
-    @imageBottom = @imageCenter.add(@upDirection.multiply(-1 * @imagePaneHeight / 2))
-    @imageLeft = @imageCenter.add(@rightDirection.multiply(-1 * @imagePaneWidth / 2))
-    @imageRight = @imageCenter.add(@rightDirection.multiply(@imagePaneWidth / 2))
+  #@imageTop = @imageCenter.add(@upDirection.multiply(@imagePaneHeight / 2))
+  #@imageBottom = @imageCenter.add(@upDirection.multiply(-1 * @imagePaneHeight / 2))
+  #@imageLeft = @imageCenter.add(@rightDirection.multiply(-1 * @imagePaneWidth / 2))
+  #@imageRight = @imageCenter.add(@rightDirection.multiply(@imagePaneWidth / 2))
 
   getCenter: () ->
-    @position.add(@direction)
+    @imageCenter
+    #@position.add(@direction)
 
 class Color
   @random: () ->
@@ -45,140 +46,106 @@ class Color
   toVector: ->
     @val.dup()
 
+class Cylinder
+  #(@radius_x, @radius_z, @reflectionProperties) ->
+  constructor: (@axis_line, @fixed_x, @fixed_y, @fixed_z, @radius_x, @radius_y, @radius_z, @reflectionProperties) ->
+    @radius_x_2 = Math.square(@radius_x)
+    @radius_z_2 = Math.square(@radius_z)
+
+    ###
+    @radius_x_2 = Math.square(@radius_x)
+    @radius_y_2 = Math.square(@radius_y)
+    @radius_z_2 = Math.square(@radius_z)
+    ###
+
+  norm: (intersectionPoint) ->
+    ###
+    int = $V([((if @fixed_x then 0 else intersectionPoint.e(1))),
+              ((if @fixed_y then 0 else intersectionPoint.e(2))),
+              ((if @fixed_z then 0 else intersectionPoint.e(3)))])
+    normal = int.subtract(@axis_line)
+    normal.toUnitVector()
+    ###
+
+  intersects: (ray) ->
+    null
+
+
+    ###
+    oc = ray.line.anchor.subtract(@axis_line)
+    dir = ray.line.direction.toUnitVector()
+
+    a = ((if @fixed_x then 0 else ((dir.e(1) * dir.e(1)) / @radius_x_2))) +
+    ((if @fixed_y then 0 else (dir.e(2) * dir.e(2) / @radius_y_2))) +
+    ((if @fixed_z then 0 else dir.e(3) * dir.e(3) / @radius_z_2))
+
+    b = ((if @fixed_x then 0 else ((2 * oc.e(1) * dir.e(1)) / @radius_x_2))) +
+    ((if @fixed_y then 0 else ((2 * oc.e(2) * dir.e(2)) / @radius_y_2))) +
+    ((if @fixed_z then 0 else ((2 * oc.e(3) * dir.e(3)) / @radius_z_2)))
+
+    c = ((if @fixed_x then 0 else ((oc.e(1) * oc.e(1)) / @radius_x_2))) +
+    ((if @fixed_y then 0 else ((oc.e(2) * oc.e(2)) / @radius_y_2))) +
+    ((if @fixed_z then 0 else ((oc.e(3) * oc.e(3)) / @radius_z_2))) - 1
+
+    under_root = (Math.square(b) - (4.0 * a * c))
+    return null if under_root < 0 || a == 0 || b == 0 || c == 0
+
+    root = Math.sqrt(under_root)
+    t1 = (-b + root) / (2 * a)
+    t2 = (-b - root) / (2 * a)
+    return t2  if t1 < RayConfig.intersectionDelta
+    return t1  if t2 < RayConfig.intersectionDelta
+    Math.min t1, t2
+    ###
+
+# From: http://cudaopencl.blogspot.ch/2012/12/ellipsoids-finally-added-to-ray-tracing.html#
+
+class Ellipsoid
+  constructor: (@center, @radius_x, @radius_y, @radius_z, @reflectionProperties) ->
+    @radius_x_2 = Math.square @radius_x
+    @radius_y_2 = Math.square @radius_y
+    @radius_z_2 = Math.square @radius_z
+
+  norm: (intersectionPoint) ->
+    n = intersectionPoint.subtract(@center)
+    t = $M([
+      [2.0 / @radius_x_2, 0, 0],
+      [0, 2.0 / @radius_y_2, 0],
+      [0, 0, 2.0 / @radius_z_2]
+    ])
+    n = t.multiply(n)
+    n.toUnitVector()
+
+  intersects: (ray) ->
+    oc = ray.line.anchor.subtract(@center)
+    dir = ray.line.direction.toUnitVector()
+    a = ((dir.e(1) * dir.e(1)) / @radius_x_2) +
+    ((dir.e(2) * dir.e(2)) / @radius_y_2) +
+    ((dir.e(3) * dir.e(3)) / @radius_z_2)
+    b = ((2 * oc.e(1) * dir.e(1)) / @radius_x_2) +
+    ((2 * oc.e(2) * dir.e(2)) / @radius_y_2) +
+    ((2 * oc.e(3) * dir.e(3)) / @radius_z_2)
+    c = ((oc.e(1) * oc.e(1)) / @radius_x_2) +
+    ((oc.e(2) * oc.e(2)) / @radius_y_2) +
+    ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
+
+    under_root = ((b * b) - (4.0 * a * c))
+    return null if under_root < 0 or a is 0 or b is 0 or c is 0
+
+    root = Math.sqrt(under_root)
+    t1 = (-b + root) / (2 * a)
+    t2 = (-b - root) / (2 * a)
+    return t2  if t1 < RayConfig.intersectionDelta
+    return t1  if t2 < RayConfig.intersectionDelta
+    Math.min t1, t2
+
+
+
 class Light
-  constructor: (@color, @location, @intensity) ->
+  constructor: (@location, @color, @intensity) ->
 
 class LightIntensity
   constructor: (@ambient, @diffuse, @specular)->
-
-# 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
-this.loadScene = () ->
-  fieldOfView = 40 / 180 * Math.PI
-  #fieldOfView = 30 / 180 * Math.PI
-  camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width, RayConfig.height)
-  #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
-
-  scene = new Scene(camera, 0.2)
-  scene.addLight(new Light(new Color(1, 1, 1), $V([10, 10, 10]), new LightIntensity(0, 1, 1)))
-  #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
-  #scene.addLight(new Light(new Color(1, 1, 1), $V([10, 5, 10]), new LightIntensity(0, 1, 1)))
-
-  if ModuleId.ALT
-    # alternative scene
-    c = Color.random()
-    scene.addObject(new Sphere($V([0, 0, 0]), 2,
-    new ReflectionProperty(
-      # ambientColor
-      c,
-      # diffuseColor
-      c,
-      # specularColor
-      new Color(1, 1, 1),
-      # specularExponent
-      32,
-      # refractionIndex
-      1.5
-    )))
-
-    #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
-
-    c = Color.random()
-    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
-      new ReflectionProperty(
-        # ambientColor
-        c,
-        # diffuseColor
-        c,
-        # specularColor
-        new Color(0.5, 0.5, 1),
-        # specularExponent
-        16,
-        # refractionIndex
-        1.5
-      )))
-
-    c = Color.random()
-    scene.addObject(new Sphere($V([1.25, -1.25, 3]), 0.5,
-      new ReflectionProperty(
-        # ambientColor
-        c,
-        # diffuseColor
-        c,
-        # specularColor
-        new Color(0.5, 0.5, 1),
-        # specularExponent
-        16,
-        # refractionIndex
-        1.5
-      )))
-
-    c = Color.random()
-    scene.addObject(new Sphere($V([0, -.75, 3]), 0.5,
-      new ReflectionProperty(
-        # ambientColor
-        c,
-        # diffuseColor
-        c,
-        # specularColor
-        new Color(0.5, 0.5, 1),
-        # specularExponent
-        16,
-        # refractionIndex
-        1.5
-      )))
-
-    scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5,
-      new ReflectionProperty(
-        # ambientColor
-        new Color(0, 0, 0.75),
-        # diffuseColor
-        new Color(0, 0, 1),
-        # specularColor
-        new Color(0.5, 0.5, 1),
-        # specularExponent
-        16,
-        # refractionIndex
-        1.5
-      )))
-  else
-    # original scene
-    scene.addObject(new Sphere($V([0, 0, 0]), 2,
-      new ReflectionProperty(
-        # ambientColor
-        new Color(0.75, 0, 0),
-        # diffuseColor
-        new Color(1, 0, 0),
-        # specularColor
-        new Color(1, 1, 1),
-        # specularExponent
-        32,
-        # refractionIndex
-        Infinity
-      )))
-
-    #new Color(0, 0, 0), new Color(0, 0, 0), new Color(1, 1, 1), 32)))
-
-    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
-      new ReflectionProperty(
-        # ambientColor
-        new Color(0, 0, 0.75),
-        # diffuseColor
-        new Color(0, 0, 1),
-        # specularColor
-        new Color(0.5, 0.5, 1),
-        # specularExponent
-        16,
-        # refractionIndex
-        1.5
-      )))
-
-
-  scene
-
-
-this.trace = (scene, color, pixelX, pixelY) ->
-  rayTracer = new RayTracer(color, pixelX, pixelY, scene)
-  rayTracer.trace()
 
 class Ray
   constructor: (@line, @refraction, @power) ->
@@ -234,7 +201,7 @@ this.initRayConfig = () ->
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
     recDepth: 5
-    intersectionDelta: 0.0001
+    intersectionDelta: 0.0000000001
 
 initRayConfig()
 
@@ -411,6 +378,7 @@ class RayTracer
     wl = light.location.subtract(pos).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
+    # Shadow
     return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0
 
     ambient = light.intensity.ambient
@@ -432,21 +400,37 @@ class RayTracer
 
   castRays: (antialiasing) ->
     camera = @scene.camera
+
+
+    camera = @scene.camera
     w = camera.width * antialiasing
     h = camera.height * antialiasing
 
+    # so rays go through the middle of a pixel
+    antialiasing_translation_mean = (1 + antialiasing) / 2
+
     [1..antialiasing].map (i) =>
       [1..antialiasing].map (j) =>
-        centerPixelX = (@pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
-        centerPixelY = (-@pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
+        # translate pixels, so that 0/0 is in the center of the image
+        pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+        pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
 
-        rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
-          camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
+        # calculate point in imagePane in 3D
+        p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
+        p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
+
+        # vector from camera position to point in image pane
+        direction = p.subtract(camera.position).toUnitVector()
 
         # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
-        new Ray($L(camera.position, rayDirection), 1, 1)
+        new Ray($L(camera.position, direction), 1, 1)
     .reduce((a, b) ->
         a.concat(b))
+
+
+
+
+this.RayTracer = RayTracer
 
 class ReflectionProperty
   constructor: (@ambientColor, @diffuseColor, @specularColor, @specularExponent, @refractionIndex) ->
@@ -476,6 +460,95 @@ class Scene
         ret = [intersectionPoint, object]
     ret
 
+class SceneLoader
+  constructor: () ->
+    # 0. set up the scene described in the exercise sheet (this is called before the rendering loop)
+    @scene = this.loadDefaults()
+
+  loadDefaults: () ->
+    fieldOfView = 40 / 180 * Math.PI
+    #fieldOfView = 30 / 180 * Math.PI
+    camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width,
+      RayConfig.height)
+    #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
+
+    scene = new Scene(camera, 0.2)
+    scene.addLight(new Light($V([10, 10, 10]), new Color(1, 1, 1), new LightIntensity(0, 1, 1)))
+    #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
+    #scene.addLight(new Light(new Color(1, 1, 1), $V([10, 5, 10]), new LightIntensity(0, 1, 1)))
+    scene
+
+  loadScene: () ->
+    scene = @scene
+
+    if ModuleId.ALT
+      this.loadAlternative(scene)
+    else if ModuleId.B3
+      this.loadB3(scene)
+    else if ModuleId.B4
+      this.loadB4(scene)
+    else
+      this.loadOriginal(scene)
+
+    scene
+
+  ### new ReflectionProperty(ambientColor, diffuseColor, specularColor, specularExponent, refractionIndex ###
+  loadOriginal: (scene) ->
+    # original scene
+    scene.addObject(new Sphere($V([0, 0, 0]), 2,
+      new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)))
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+  loadB3: (scene) ->
+    # Quadrics
+
+    # axis line, fixed x,y,z axis, radii, reflection properties
+    scene.addObject new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1,
+      new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32,
+        Infinity))
+    # center, x,y,z radii, reflection properties
+    scene.addObject new Ellipsoid($V([1.25, 1.25, 3]), 0.25, 0.75, 0.5,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16.0,
+        1.5))
+
+    scene.addObject(new Sphere($V([-1.25, -1.25, 3]), 0.5,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+    scene.addObject(new Sphere($V([-1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(new Color(1, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+  loadB4: (scene) ->
+    # Boolean operations
+
+  loadAlternative: (scene) ->
+    # alternative scene
+    c = Color.random()
+    scene.addObject(new Sphere($V([0, 0, 0]), 2,
+      new ReflectionProperty(c, c, new Color(1, 1, 1), 32, 1.5)))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([1.25, -1.25, 3]), 0.5,
+      new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
+
+    c = Color.random()
+    scene.addObject(new Sphere($V([0, -.75, 3]), 0.5,
+      new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
+
+    scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+
+this.SceneLoader = SceneLoader
+
+this.trace = (scene, color, pixelX, pixelY) ->
+  rayTracer = new RayTracer(color, pixelX, pixelY, scene)
+  rayTracer.trace()
+
 class Sphere
   constructor: (@center, @radius, @reflectionProperties) ->
     @radiusSquared = @radius * @radius
@@ -484,9 +557,6 @@ class Sphere
     intersectionPoint.subtract(@center).toUnitVector()
 
   intersects: (ray) ->
-    console.setRlog()
-    #console.rlog ""
-
     o = ray.line.anchor
     d = ray.line.direction
     c = @center
@@ -522,7 +592,7 @@ class Sphere
 
 
 ### Random log ###
-console.setRlog = (p = 0.01) ->
+console.setRlog = (p = 0.0001) ->
   @shoulLog = Math.random() <= p
 console.rlog = (msg) ->
   return unless @shoulLog

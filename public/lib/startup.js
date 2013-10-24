@@ -44,7 +44,8 @@
         clearBuffer(); // clear current buffer
         curPixelX = 0;
         curPixelY = 0; // reset next pixel to be rendered
-        var scene = loadScene(); // load the scene
+        var s = new SceneLoader();
+        var scene = s.loadScene(); // load the scene
         refresh();
         setTimeout(function () {
             render(scene);
@@ -90,7 +91,8 @@
         for (var i = 0; i < 50; ++i, ++curPixelY) {
             for (curPixelX = 0; curPixelX < RayConfig.width; ++curPixelX) {
                 // compute the color for the current pixel
-                trace(scene, color, curPixelX, curPixelY);
+                var raytracer = new RayTracer(color, curPixelX, curPixelY, scene);
+                raytracer.trace();
 
                 // copy the result in the buffer
                 pixBuffer[4 * curPixel + 0] = color.e(1);
@@ -120,7 +122,8 @@
 
     function debugPixel(x, y) {
         var color = $V([0, 0, 0]);
-        trace(color, x, y);
+        var scene = s.loadScene();
+        new RayTracer(color, x, y, scene).trace();
         console.log("Pixel (" + x + "," + y + "): RGB -> " + color.e(1) + " " + color.e(2) + " " + color.e(3));
     }
 

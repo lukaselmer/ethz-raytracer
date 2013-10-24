@@ -48,6 +48,6 @@ this.initRayConfig = () ->
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
     recDepth: 5
-    intersectionDelta: 0.0001
+    intersectionDelta: 0.0000000001
 
 initRayConfig()

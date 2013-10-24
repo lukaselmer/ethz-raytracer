@@ -3,7 +3,7 @@
 
 console.setRlog = function(p) {
   if (p == null) {
-    p = 0.01;
+    p = 0.0001;
   }
   return this.shoulLog = Math.random() <= p;
 };

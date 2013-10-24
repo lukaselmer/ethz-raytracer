@@ -171,6 +171,7 @@ class RayTracer
     wl = light.location.subtract(pos).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
+    # Shadow
     return new Color(0, 0, 0) if @scene.intersections(new Ray($L(pos, wl), ray.refraction, 1)).length > 0
 
     ambient = light.intensity.ambient
@@ -192,18 +193,34 @@ class RayTracer
 
   castRays: (antialiasing) ->
     camera = @scene.camera
+
+
+    camera = @scene.camera
     w = camera.width * antialiasing
     h = camera.height * antialiasing
 
+    # so rays go through the middle of a pixel
+    antialiasing_translation_mean = (1 + antialiasing) / 2
+
     [1..antialiasing].map (i) =>
       [1..antialiasing].map (j) =>
-        centerPixelX = (@pixelX * antialiasing + (i - 1) + 0.5 - w / 2) / h * camera.imagePaneHeight # + 0.5 for the center of the pixel
-        centerPixelY = (-@pixelY * antialiasing - (j - 1) - 0.5 + h / 2) / w * camera.imagePaneWidth # - 0.5 for the center of the pixel
+        # translate pixels, so that 0/0 is in the center of the image
+        pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+        pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
 
-        rayDirection = camera.imageCenter.add(camera.upDirection.multiply(centerPixelX)).add(
-          camera.rightDirection.multiply(centerPixelY)).subtract(camera.position)
+        # calculate point in imagePane in 3D
+        p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
+        p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
+
+        # vector from camera position to point in image pane
+        direction = p.subtract(camera.position).toUnitVector()
 
         # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
-        new Ray($L(camera.position, rayDirection), 1, 1)
+        new Ray($L(camera.position, direction), 1, 1)
     .reduce((a, b) ->
         a.concat(b))
+
+
+
+
+this.RayTracer = RayTracer
