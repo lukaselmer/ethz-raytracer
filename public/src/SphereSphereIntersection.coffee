@@ -17,3 +17,10 @@ class SphereSphereIntersection
     return false unless s1 && s2
     return Math.min(s1, s2)
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]

@@ -30,6 +30,17 @@ SphereSphereIntersection = (function() {
     return Math.min(s1, s2);
   };
 
+  SphereSphereIntersection.prototype.intersection = function(ray) {
+    var i, intersectionPoint, normal;
+    i = this.intersects(ray);
+    if (!i) {
+      return false;
+    }
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+    normal = this.norm(intersectionPoint);
+    return [i, intersectionPoint, normal];
+  };
+
   return SphereSphereIntersection;
 
 })();

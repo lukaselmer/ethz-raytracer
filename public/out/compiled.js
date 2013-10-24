@@ -130,6 +130,17 @@
       return Math.min(t1, t2);
     };
 
+    Cylinder.prototype.intersection = function(ray) {
+      var i, intersectionPoint, normal;
+      i = this.intersects(ray);
+      if (!i) {
+        return false;
+      }
+      intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+      normal = this.norm(intersectionPoint);
+      return [i, intersectionPoint, normal];
+    };
+
     return Cylinder;
 
   })();
@@ -175,6 +186,17 @@
         return t1;
       }
       return Math.min(t1, t2);
+    };
+
+    Ellipsoid.prototype.intersection = function(ray) {
+      var i, intersectionPoint, normal;
+      i = this.intersects(ray);
+      if (!i) {
+        return false;
+      }
+      intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+      normal = this.norm(intersectionPoint);
+      return [i, intersectionPoint, normal];
     };
 
     return Ellipsoid;
@@ -315,13 +337,12 @@
     };
 
     RayTracer.prototype.traceRec = function(ray, color, times) {
-      var globalAmbient, globalAmbientColor, intersection, light, obj, pos, _i, _len, _ref;
+      var globalAmbient, globalAmbientColor, intersection, light, normal, obj, pos, _i, _len, _ref;
       intersection = this.scene.firstIntersection(ray);
       if (!intersection) {
         return color;
       }
-      pos = intersection[0];
-      obj = intersection[1];
+      pos = intersection[0], normal = intersection[1], obj = intersection[2];
       globalAmbient = this.scene.globalAmbient;
       globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient);
       color = color.add(globalAmbientColor);
@@ -336,13 +357,13 @@
         return color;
       }
       if (RayConfig.reflection) {
-        return color.add(this.reflectAndRefract(pos, obj, ray, times));
+        return color.add(this.reflectAndRefract(pos, obj, normal, ray, times));
       }
     };
 
-    RayTracer.prototype.reflectAndRefract = function(pos, obj, ray, times) {
+    RayTracer.prototype.reflectAndRefract = function(pos, obj, normal, ray, times) {
       var color, reflectedRay, refractedRay, specularReflection, specularRefraction, _ref;
-      _ref = this.specularRays(pos, obj, ray), reflectedRay = _ref[0], refractedRay = _ref[1];
+      _ref = this.specularRays(pos, obj, normal, ray), reflectedRay = _ref[0], refractedRay = _ref[1];
       color = new Color(0, 0, 0);
       if (reflectedRay != null) {
         specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1);
@@ -357,9 +378,9 @@
       return color;
     };
 
-    RayTracer.prototype.specularRays = function(pos, obj, ray) {
+    RayTracer.prototype.specularRays = function(pos, obj, norm, ray) {
       var cos_theta_i, cos_theta_t, i, i_dot_n, n, n1, n2, r1, r2, ratio, reflectionDirection, reflectionPowerRatio, refractionDirection, refractionPowerRatio, sin_theta_t_2;
-      n = obj.norm(pos);
+      n = norm;
       if (ray.isInside()) {
         n = n.multiply(-1);
       }
@@ -538,12 +559,11 @@
       min = Infinity;
       ret = null;
       this.objects.forEach(function(object) {
-        var i, intersectionPoint;
-        i = object.intersects(ray);
+        var i, intersectionPoint, normal, _ref;
+        _ref = object.intersection(ray), i = _ref[0], intersectionPoint = _ref[1], normal = _ref[2];
         if (i && i < min && i > RayConfig.intersectionDelta) {
           min = i;
-          intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
-          return ret = [intersectionPoint, object];
+          return ret = [intersectionPoint, normal, object];
         }
       });
       return ret;
@@ -679,6 +699,17 @@
       return Math.min(t1, t2);
     };
 
+    Sphere.prototype.intersection = function(ray) {
+      var i, intersectionPoint, normal;
+      i = this.intersects(ray);
+      if (!i) {
+        return false;
+      }
+      intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+      normal = this.norm(intersectionPoint);
+      return [i, intersectionPoint, normal];
+    };
+
     return Sphere;
 
   })();
@@ -710,6 +741,17 @@
         return false;
       }
       return Math.min(s1, s2);
+    };
+
+    SphereSphereIntersection.prototype.intersection = function(ray) {
+      var i, intersectionPoint, normal;
+      i = this.intersects(ray);
+      if (!i) {
+        return false;
+      }
+      intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+      normal = this.norm(intersectionPoint);
+      return [i, intersectionPoint, normal];
     };
 
     return SphereSphereIntersection;

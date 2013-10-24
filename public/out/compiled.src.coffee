@@ -85,6 +85,13 @@ class Cylinder
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]
 
 # From: http://cudaopencl.blogspot.ch/2012/12/ellipsoids-finally-added-to-ray-tracing.html#
 
@@ -135,6 +142,13 @@ class Ellipsoid
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]
 
 
 class Light
@@ -228,11 +242,10 @@ class RayTracer
 
   traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
-    
+
     return color unless intersection
 
-    pos = intersection[0]
-    obj = intersection[1]
+    [pos, normal, obj] = intersection
 
     globalAmbient = @scene.globalAmbient
     globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
@@ -244,10 +257,10 @@ class RayTracer
 
     return color if times <= 0
 
-    color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
+    color.add(this.reflectAndRefract(pos, obj, normal, ray, times)) if RayConfig.reflection
 
-  reflectAndRefract: (pos, obj, ray, times) ->
-    [reflectedRay, refractedRay] = this.specularRays(pos, obj, ray)
+  reflectAndRefract: (pos, obj, normal, ray, times) ->
+    [reflectedRay, refractedRay] = this.specularRays(pos, obj, normal, ray)
     color = new Color(0, 0, 0)
     if reflectedRay?
       specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1)
@@ -268,9 +281,10 @@ class RayTracer
   #specularReflection = specularReflection.multiplyColor(ks)
   #specularReflection
 
-  specularRays: (pos, obj, ray) ->
+  specularRays: (pos, obj, norm, ray) ->
     # the norm n (unit vector)
-    n = obj.norm(pos) #.multiply(-1).toUnitVector()
+    n = norm
+    #n = obj.norm(pos) #.multiply(-1).toUnitVector()
     n = n.multiply(-1) if ray.isInside()
     # the view direction / input ray i (vector)
     i = pos.subtract(ray.line.anchor).toUnitVector()
@@ -447,11 +461,11 @@ class Scene
     min = Infinity
     ret = null
     @objects.forEach (object) ->
-      i = object.intersects(ray)
+      [i, intersectionPoint, normal] = object.intersection(ray)
       if i && i < min && i > RayConfig.intersectionDelta
         min = i
-        intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-        ret = [intersectionPoint, object]
+        #intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+        ret = [intersectionPoint, normal, object]
     ret
 
 class SceneLoader
@@ -603,6 +617,13 @@ class Sphere
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]
 
 class SphereSphereIntersection
   constructor: (@sphere1, @sphere2, @reflectionProperties) ->
@@ -623,6 +644,13 @@ class SphereSphereIntersection
     return false unless s1 && s2
     return Math.min(s1, s2)
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]
 
 ### Random log ###
 console.setRlog = (p = 0.0001) ->

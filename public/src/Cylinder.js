@@ -46,6 +46,21 @@ Cylinder = (function() {
     return Math.min(t1, t2);
   };
 
+  Cylinder.prototype.intersection = function(ray) {
+    var i, intersectionPoint, normal;
+    i = this.intersects(ray);
+    if (!i) {
+      return false;
+    }
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+    normal = this.norm(intersectionPoint);
+    return [i, intersectionPoint, normal];
+  };
+
   return Cylinder;
 
 })();
+
+/*
+//@ sourceMappingURL=Cylinder.map
+*/

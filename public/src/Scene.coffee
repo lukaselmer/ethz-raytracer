@@ -13,9 +13,9 @@ class Scene
     min = Infinity
     ret = null
     @objects.forEach (object) ->
-      i = object.intersects(ray)
+      [i, intersectionPoint, normal] = object.intersection(ray)
       if i && i < min && i > RayConfig.intersectionDelta
         min = i
-        intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-        ret = [intersectionPoint, object]
+        #intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+        ret = [intersectionPoint, normal, object]
     ret

@@ -22,12 +22,11 @@ Scene = (function() {
     min = Infinity;
     ret = null;
     this.objects.forEach(function(object) {
-      var i, intersectionPoint;
-      i = object.intersects(ray);
+      var i, intersectionPoint, normal, _ref;
+      _ref = object.intersection(ray), i = _ref[0], intersectionPoint = _ref[1], normal = _ref[2];
       if (i && i < min && i > RayConfig.intersectionDelta) {
         min = i;
-        intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
-        return ret = [intersectionPoint, object];
+        return ret = [intersectionPoint, normal, object];
       }
     });
     return ret;

@@ -43,6 +43,21 @@ Sphere = (function() {
     return Math.min(t1, t2);
   };
 
+  Sphere.prototype.intersection = function(ray) {
+    var i, intersectionPoint, normal;
+    i = this.intersects(ray);
+    if (!i) {
+      return false;
+    }
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i));
+    normal = this.norm(intersectionPoint);
+    return [i, intersectionPoint, normal];
+  };
+
   return Sphere;
 
 })();
+
+/*
+//@ sourceMappingURL=Sphere.map
+*/

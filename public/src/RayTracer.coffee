@@ -24,11 +24,10 @@ class RayTracer
 
   traceRec: (ray, color, times) ->
     intersection = @scene.firstIntersection(ray)
-    
+
     return color unless intersection
 
-    pos = intersection[0]
-    obj = intersection[1]
+    [pos, normal, obj] = intersection
 
     globalAmbient = @scene.globalAmbient
     globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
@@ -40,10 +39,10 @@ class RayTracer
 
     return color if times <= 0
 
-    color.add(this.reflectAndRefract(pos, obj, ray, times)) if RayConfig.reflection
+    color.add(this.reflectAndRefract(pos, obj, normal, ray, times)) if RayConfig.reflection
 
-  reflectAndRefract: (pos, obj, ray, times) ->
-    [reflectedRay, refractedRay] = this.specularRays(pos, obj, ray)
+  reflectAndRefract: (pos, obj, normal, ray, times) ->
+    [reflectedRay, refractedRay] = this.specularRays(pos, obj, normal, ray)
     color = new Color(0, 0, 0)
     if reflectedRay?
       specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1)
@@ -64,9 +63,10 @@ class RayTracer
   #specularReflection = specularReflection.multiplyColor(ks)
   #specularReflection
 
-  specularRays: (pos, obj, ray) ->
+  specularRays: (pos, obj, norm, ray) ->
     # the norm n (unit vector)
-    n = obj.norm(pos) #.multiply(-1).toUnitVector()
+    n = norm
+    #n = obj.norm(pos) #.multiply(-1).toUnitVector()
     n = n.multiply(-1) if ray.isInside()
     # the view direction / input ray i (vector)
     i = pos.subtract(ray.line.anchor).toUnitVector()

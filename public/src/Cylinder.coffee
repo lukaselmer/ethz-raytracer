@@ -37,3 +37,10 @@ class Cylinder
     return t1  if t2 < RayConfig.intersectionDelta
     Math.min t1, t2
 
+  intersection: (ray) ->
+    i = this.intersects(ray)
+    return false unless i
+
+    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    normal = this.norm(intersectionPoint)
+    [i, intersectionPoint, normal]
