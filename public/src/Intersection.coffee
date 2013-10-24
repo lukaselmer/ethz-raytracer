@@ -8,6 +8,13 @@ class Intersection
       @point = @ray.line.anchor.add(@ray.line.direction.multiply(@distance))
       @normal = @figure.norm(@point, @ray)
 
+
+  getPoint: () ->
+    @point
+
+  getNormal: () ->
+    @normal
+
   exists: () ->
     @distance > RayConfig.intersectionDelta
 

@@ -10,7 +10,7 @@ class MultipleObjectsIntersection
     [i21, i22] = i2
     [i21, i22] = [i22, i21] if i21 > i22
 
-    return if i21 < i11 then @figure1.norm(intersectionPoint) else @figure2.norm(intersectionPoint)
+    return if i21 < i11 then @figure1.norm(intersectionPoint, ray) else @figure2.norm(intersectionPoint, ray)
 
   solutions: (ray) ->
     i1 = @figure1.solutions(ray)
@@ -28,4 +28,4 @@ class MultipleObjectsIntersection
 
     return null if i12 < i21
 
-    [i21, Math.min(i12, i21)]
+    [i21, Math.min(i12, i22)]
