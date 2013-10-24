@@ -52,7 +52,7 @@ class RayTracer
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
       specularRefraction = this.traceRec(refractedRay, times - 1)
-      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
+      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor) unless ray.isInside() && RayConfig.strongRefraction
       color = color.add specularRefraction.multiply(refractedRay.power)
     color
 
@@ -148,8 +148,12 @@ class RayTracer
     # so rays go through the middle of a pixel
     antialiasing_translation_mean = (1 + antialiasing) / 2
 
-    [1..antialiasing].map (i) =>
-      [1..antialiasing].map (j) =>
+    x = [1..antialiasing]
+
+    arr = []
+
+    for i in x
+      for j in x
         # translate pixels, so that 0/0 is in the center of the image
         pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
         pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
@@ -159,12 +163,10 @@ class RayTracer
         p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
 
         # vector from camera position to point in image pane
-        direction = p.subtract(camera.position).toUnitVector()
+        direction = p.subtract(camera.position)
 
         # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
-        new Ray($L(camera.position, direction), 1, 1)
-    .reduce((a, b) ->
-        a.concat(b))
-
+        arr.push new Ray($L(camera.position, direction), 1, 1)
+    arr
 
 this.RayTracer = RayTracer

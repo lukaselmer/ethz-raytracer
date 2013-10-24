@@ -24,3 +24,7 @@ public/src/RayTracer.js
 public/src/Scene.js
 public/src/Sphere.js
 public/src/SphereSphereIntersection.js
+public/out/compiled.js
+public/out/compiled.js.map
+public/out/compiled.min.js.map
+public/out/compiled.src.coffee

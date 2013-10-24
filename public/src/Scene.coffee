@@ -10,10 +10,10 @@ class Scene
     @objects.push object
 
   firstIntersection: (ray) ->
-    min = null
-    @objects.forEach (figure) ->
-      intersection = new Intersection(figure, ray)
-
-      if intersection.exists() && intersection.isNearerThen(min)
-        min = intersection
-    min
+    min = Infinity
+    ret = null
+    for figure in @objects
+      dist = Intersection.intersectionExists(figure, ray)
+      if dist && dist < min && dist > RayConfig.intersectionDelta
+        ret = new Intersection(figure, ray)
+    ret
