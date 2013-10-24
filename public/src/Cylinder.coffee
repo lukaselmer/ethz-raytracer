@@ -11,7 +11,7 @@ class Cylinder
     n = intersection.subtract(@axis_line)
     n.toUnitVector()
 
-  intersects: (ray) ->
+  solutions: (ray) ->
     oc = ray.line.anchor.subtract(@axis_line)
     dir = ray.line.direction.toUnitVector()
 
@@ -35,7 +35,18 @@ class Cylinder
     t2 = (-b - root) / (2 * a)
     return t2  if t1 < RayConfig.intersectionDelta
     return t1  if t2 < RayConfig.intersectionDelta
-    Math.min t1, t2
+
+    # returns the smaller ti first
+    if t1 <= t2
+      return [t1, t2]
+    return [t2, t1]
+
+  intersects: (ray) ->
+    [t1, t2] = this.solutions(ray)
+    # same as Math.min t1, t2
+    if t1 > t2
+      throw "Invalid state: t1=#{t1} > t2=#{t2}"
+    t1
 
   intersection: (ray) ->
     i = this.intersects(ray)

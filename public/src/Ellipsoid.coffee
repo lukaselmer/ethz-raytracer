@@ -24,7 +24,7 @@ class Ellipsoid
     n = t.multiply(n)
     n.toUnitVector()
 
-  intersects: (ray) ->
+  solutions: (ray) ->
     oc = ray.line.anchor.subtract(@center)
     dir = ray.line.direction.toUnitVector()
     a = ((dir.e(1) * dir.e(1)) / @radius_x_2) +
@@ -45,13 +45,13 @@ class Ellipsoid
     t2 = (-b - root) / (2 * a)
     return t2  if t1 < RayConfig.intersectionDelta
     return t1  if t2 < RayConfig.intersectionDelta
-    Math.min t1, t2
+    [t1, t2]
 
-  intersection: (ray) ->
-    i = this.intersects(ray)
-    return false unless i
-
-    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-    normal = this.norm(intersectionPoint)
-    [i, intersectionPoint, normal]
+    #intersection: (ray) ->
+    #  i = this.intersects(ray)
+    #  return false unless i
+    #
+    #  intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
+    #  normal = this.norm(intersectionPoint)
+    #  [i, intersectionPoint, normal]
 

@@ -5,7 +5,7 @@ class Sphere
   norm: (intersectionPoint) ->
     intersectionPoint.subtract(@center).toUnitVector()
 
-  intersects: (ray) ->
+  solutions: (ray) ->
     o = ray.line.anchor
     d = ray.line.direction
     c = @center
@@ -37,12 +37,12 @@ class Sphere
     t2 = rayDistanceClosestToCenter + Math.sqrt(x)
     return t2  if t1 < RayConfig.intersectionDelta
     return t1  if t2 < RayConfig.intersectionDelta
-    Math.min t1, t2
+    [t1, t2]
 
-  intersection: (ray) ->
+    ###intersection: (ray) ->
     i = this.intersects(ray)
     return false unless i
 
     intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
     normal = this.norm(intersectionPoint)
-    [i, intersectionPoint, normal]
+    [i, intersectionPoint, normal]###

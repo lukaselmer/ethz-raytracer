@@ -12,7 +12,7 @@ class RayTracer
     console.setRlog()
 
     traceRay = (ray) =>
-      this.traceRec(ray, new Color(0, 0, 0), RayConfig.recDepth)
+      this.traceRec(ray, RayConfig.recDepth)
 
     colors = rays.map (ray) ->
       traceRay(ray)
@@ -22,62 +22,59 @@ class RayTracer
       previous.add(current)).multiply(1 / colors.length)
     @color.setElements(averageColorVector.elements)
 
-  traceRec: (ray, color, times) ->
+  traceRec: (ray, times) ->
+    color = new Color(0, 0, 0)
+
     intersection = @scene.firstIntersection(ray)
 
     return color unless intersection
 
-    [pos, normal, obj] = intersection
-
     globalAmbient = @scene.globalAmbient
-    globalAmbientColor = obj.reflectionProperties.ambientColor.multiply(globalAmbient)
+    globalAmbientColor = intersection.figure.reflectionProperties.ambientColor.multiply(globalAmbient)
     color = color.add(globalAmbientColor)
 
     if RayConfig.illumination
       for light in @scene.lights
-        color = color.add(this.illuminate(pos, obj, ray, light))
+        color = color.add(this.illuminate(intersection, ray, light))
 
     return color if times <= 0
 
-    color.add(this.reflectAndRefract(pos, obj, normal, ray, times)) if RayConfig.reflection
+    color = color.add(this.reflectAndRefract(intersection, ray, times)) if RayConfig.reflection
 
-  reflectAndRefract: (pos, obj, normal, ray, times) ->
-    [reflectedRay, refractedRay] = this.specularRays(pos, obj, normal, ray)
+    color
+
+  reflectAndRefract: (intersection, ray, times) ->
+    obj = intersection.figure
+    [reflectedRay, refractedRay] = this.specularRays(intersection, ray)
     color = new Color(0, 0, 0)
     if reflectedRay?
-      specularReflection = this.traceRec(reflectedRay, new Color(0, 0, 0), times - 1)
+      specularReflection = this.traceRec(reflectedRay, times - 1)
       specularReflection = specularReflection.multiplyColor(obj.reflectionProperties.specularColor)
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
-      specularRefraction = this.traceRec(refractedRay, new Color(0, 0, 0), times - 1)
-      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor) #unless ray.isInside()
+      specularRefraction = this.traceRec(refractedRay, times - 1)
+      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor)
       color = color.add specularRefraction.multiply(refractedRay.power)
+      console.rlog specularRefraction.multiply(refractedRay.power)
+      console.rlog refractedRay.power
     color
 
-  #nv = obj.norm(pos)
-  #w = ray.line.direction
-  #wr = nv.multiply(2 * w.dot(nv)).subtract(w).toUnitVector().multiply(-1)
-  #ks = obj.reflectionProperties.specularColor
-
-  #specularReflection = this.traceRec(new Ray($L(pos, wr), ray.rafraction, 1), new Color(0, 0, 0), times - 1)
-  #specularReflection = specularReflection.multiplyColor(ks)
-  #specularReflection
-
-  specularRays: (pos, obj, norm, ray) ->
+  specularRays: (intersection, ray) ->
     # the norm n (unit vector)
-    n = norm
+    n = intersection.normal
+    # the point of intersection p
+    p = intersection.point
     #n = obj.norm(pos) #.multiply(-1).toUnitVector()
     n = n.multiply(-1) if ray.isInside()
     # the view direction / input ray i (vector)
-    i = pos.subtract(ray.line.anchor).toUnitVector()
+    i = p.subtract(ray.line.anchor).toUnitVector()
 
     n1 = ray.refraction
-    n2 = if ray.isInside() then 1 else obj.reflectionProperties.refractionIndex
+    n2 = if ray.isInside() then 1 else intersection.figure.reflectionProperties.refractionIndex
 
     # the angle theta θ = i*n
     i_dot_n = i.dot(n)
     cos_theta_i = -i_dot_n
-    #cos_theta_i = -cos_theta_i if ray.isInside()
 
     # === reflection ===
 
@@ -88,14 +85,14 @@ class RayTracer
 
     # Total reflection!
     if n2 == Infinity
-      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
 
     ratio = n1 / n2
     sin_theta_t_2 = Math.square(ratio) * (1 - Math.square(cos_theta_i))
 
     if sin_theta_t_2 > 1
       # Total reflection!
-      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
 
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2)
     refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t)).toUnitVector()
@@ -109,80 +106,37 @@ class RayTracer
 
     unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
       # Total reflection!
-      return [new Ray($L(pos, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
 
-    throw "Invalid state: reflectionPowerRatio: #{reflectionPowerRatio}, refractionPowerRatio: #{refractionPowerRatio}" unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
+    unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
+      throw "Invalid state: reflectionPowerRatio: #{reflectionPowerRatio}, refractionPowerRatio: #{refractionPowerRatio}"
 
-    return [new Ray($L(pos, reflectionDirection), n1, ray.power * reflectionPowerRatio),
-            new Ray($L(pos, refractionDirection), n2, ray.power * refractionPowerRatio)] # * 0.5 : why here * 0.5
+    return [new Ray($L(p, reflectionDirection), n1, ray.power * reflectionPowerRatio),
+            new Ray($L(p, refractionDirection), n2, ray.power * refractionPowerRatio)]
 
-  ###
-    # normal of intersection-point
-    #n = obj.norm(pos)
-    n = n.multiply(-1) if ray.isInside()
 
-    # view-direction
-    w = ray.line.anchor.subtract(pos).toUnitVector()
+  illuminate: (intersection, ray, light) ->
+    f = intersection.figure
+    p = intersection.point
 
-    # angle between view-direction and normal
-    w_dot_nv = w.dot(n)
-
-    # ray-reflection-direction: wr = 2n(w*n) - w
-    wr = n.multiply(2 * w_dot_nv).subtract(w).toUnitVector()
-
-    # refraction
-    refractedRay = null
-    n1 = ray.refraction
-    n2 = (if ray.isInside() then 1 else obj.reflectionProperties.refractionIndex)
-    ref = n1 / n2
-    reflectPower = 0
-    refractPower = 0
-    unless n2 is Infinity
-      first = w.subtract(n.multiply(w_dot_nv)).multiply(-ref)
-      underRoot = 1 - (ref * ref) * (1 - (w_dot_nv * w_dot_nv))
-
-      if underRoot < 0 && !ray.isInside()
-        throw "underRoot < 0 && !ray.isInside()"
-
-      if underRoot >= 0
-        # ray-refraction-direction
-        wt = first.subtract(n.multiply(Math.sqrt(underRoot))).toUnitVector()
-
-        # fresnel equation
-        cos1 = wr.dot(n) # Math.cos(w_dot_n);
-        cos2 = wt.dot(n.multiply(-1)) # Math.cos(wr_dot_n);
-        p_reflect = (n2 * cos1 - n1 * cos2) / (n2 * cos1 + n1 * cos2)
-        p_refract = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2)
-        reflectPower = ((p_reflect * p_reflect) + (p_refract * p_refract)) * ray.power #* 0.5
-        refractPower = (1 - reflectPower) * ray.power #* 0.5
-
-        refractedRay = new Ray($L(pos, wt), n2, refractPower)
-      else
-        reflectPower = ray.power
-
-    reflectedRay = new Ray($L(pos, wr), ray.refraction, reflectPower)
-    [reflectedRay, refractedRay]
-  ###
-
-  illuminate: (pos, obj, ray, light) ->
-    nv = obj.norm(pos)
+    nv = f.norm(p)
 
     w = ray.line.direction
-    wl = light.location.subtract(pos).toUnitVector()
+    wl = light.location.subtract(p).toUnitVector()
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(pos, wl), ray.refraction, 1))
+    return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1))
 
     ambient = light.intensity.ambient
-    ambientColor = obj.reflectionProperties.ambientColor.multiply(ambient)
+    ambientColor = f.reflectionProperties.ambientColor.multiply(ambient)
 
-    kd = obj.reflectionProperties.diffuseColor
+    kd = f.reflectionProperties.diffuseColor
     E = light.intensity.diffuse * nv.dot(wl)
     diffuse = kd.multiply(E * light.intensity.diffuse)
 
-    n = obj.reflectionProperties.specularExponent
-    ks = obj.reflectionProperties.specularColor
+    n = f.reflectionProperties.specularExponent
+    ks = f.reflectionProperties.specularColor
     frac = Math.pow(wr.dot(wl), n) / nv.dot(wl)
     spepcularIntensity = frac * E
     spepcularIntensity = 0 if frac < 0
@@ -193,11 +147,6 @@ class RayTracer
 
   castRays: (antialiasing) ->
     camera = @scene.camera
-
-
-    camera = @scene.camera
-    w = camera.width * antialiasing
-    h = camera.height * antialiasing
 
     # so rays go through the middle of a pixel
     antialiasing_translation_mean = (1 + antialiasing) / 2
@@ -219,8 +168,6 @@ class RayTracer
         new Ray($L(camera.position, direction), 1, 1)
     .reduce((a, b) ->
         a.concat(b))
-
-
 
 
 this.RayTracer = RayTracer
