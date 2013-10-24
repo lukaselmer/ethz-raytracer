@@ -6,7 +6,7 @@ class Intersection
       [t1, t2] = sol
       @distance = Math.min t1, t2
       @point = @ray.line.anchor.add(@ray.line.direction.multiply(@distance))
-      @normal = @figure.norm(@point)
+      @normal = @figure.norm(@point, @ray)
 
   exists: () ->
     @distance > RayConfig.intersectionDelta

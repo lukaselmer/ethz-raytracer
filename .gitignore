@@ -28,3 +28,4 @@ public/out/compiled.js
 public/out/compiled.js.map
 public/out/compiled.min.js.map
 public/out/compiled.src.coffee
+public/src/SceneLoader.js

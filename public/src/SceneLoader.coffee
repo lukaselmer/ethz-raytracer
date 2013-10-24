@@ -70,10 +70,8 @@ class SceneLoader
     scene.addObject new SphereSphereIntersection(sphere1, sphere2,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
 
-    sphere1 = new Sphere($V([0.5, 0, 3]), 0.6, null)
-    sphere2 = new Sphere($V([-0.5, 0, 3]), 0.6, null)
-    sphere1 = new Sphere($V([0, 0, 3]), 0.6, null)
-    sphere2 = new Sphere($V([0, 0, 4]), 0.6, null)
+    sphere1 = new Sphere($V([0.5, 0, 3]), 0.7, null)
+    sphere2 = new Sphere($V([-0.5, 0, 2.75]), 0.7, null)
     scene.addObject new SphereSphereIntersection(sphere1, sphere2,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, Infinity))
 

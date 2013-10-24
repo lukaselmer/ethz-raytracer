@@ -116,7 +116,7 @@ class RayTracer
     f = intersection.figure
     p = intersection.point
 
-    nv = f.norm(p)
+    nv = intersection.normal
 
     w = ray.line.direction
     wl = light.location.subtract(p).toUnitVector()
