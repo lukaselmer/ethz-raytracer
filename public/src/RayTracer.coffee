@@ -160,11 +160,22 @@ class RayTracer
           arr.push this.calcRayForPixel(camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'random'
       x = [1..(antialiasing*antialiasing)]
+      z = antialiasing_translation_mean / 2
       for i in x
         # translate pixels, so that 0/0 is in the center of the image
-        pixelX = ((@pixelX + Math.random(antialiasing_translation_mean / 2) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-        pixelY = ((@pixelY + Math.random(antialiasing_translation_mean / 2) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+        pixelX = ((@pixelX + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+        pixelY = ((@pixelY + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
         arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+    else if RayConfig.antialiasingTechnique == 'jittered'
+      x = [1..antialiasing]
+      antialiasing_translation_mean = antialiasing_translation_mean + (1 / antialiasing / 2)
+      z = 1/antialiasing
+      for i in x
+        for j in x
+          # translate pixels, so that 0/0 is in the center of the image
+          pixelX = ((@pixelX + i/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((@pixelY + j/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          arr.push this.calcRayForPixel(camera, pixelX, pixelY)
 
 
     arr
