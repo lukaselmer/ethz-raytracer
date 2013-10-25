@@ -42,14 +42,6 @@ class Cylinder
     return [t2, t1]
 
   intersection: (ray) ->
-    i = this.intersects(ray)
-    return null unless i
-
-    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-    normal = this.norm(intersectionPoint)
-    [i, intersectionPoint, normal]
-
-  intersection: (ray) ->
     i = this.solutions(ray)
     return null unless i
     [t1, t2] = i
