@@ -13,10 +13,10 @@ class Intersection
       @distance = @t2
       @distance2 = @t2
 
-  getPoint: () ->
-    @point = @ray.line.anchor.add(@ray.line.direction.multiply(@distance)) unless @point
-    @point
-
   getNormal: () ->
     @normal = @normalFigure.norm(this.getPoint()) unless @normal
     @normal
+
+  getPoint: () ->
+    @point = @ray.line.anchor.add(@ray.line.direction.multiply(@distance)) unless @point
+    @point
