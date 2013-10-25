@@ -119,7 +119,7 @@ class SceneLoader
       new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
 
     c = Color.random()
-    scene.addObject(new Sphere($V([-2, -0.75, 3]), 0.5,
+    scene.addObject(new Sphere($V([-1, -0.75, 3]), 0.5,
       new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
 
     scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5,

@@ -35,6 +35,6 @@ class MultipleObjectsIntersection
 
     [f1, i1, i11, i12, f2, i2, i21, i22] = [f2, i2, i21, i22, f1, i1, i11, i12] if i21 < i11
 
-    return null if i12 < i21
+    return null if i12 <= i21
 
     new Intersection(ray, this, f2, i21, Math.min(i12, i22), @reflectionProperties)
