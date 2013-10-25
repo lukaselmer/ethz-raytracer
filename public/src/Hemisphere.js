@@ -7,62 +7,60 @@ Hemisphere = (function() {
     this.plane = plane;
   }
 
-  Hemisphere.prototype.norm = function(intersectionPoint, ray) {
-    var pi, pi1, pi2, si, si1, si2, _ref, _ref1;
-    si = this.sphere.solutions(ray);
-    pi = this.plane.solutions(ray);
-    if (!(si && pi)) {
+  Hemisphere.prototype.intersection = function(ray) {
+    var planeIntersection, sphereIntersection;
+    sphereIntersection = this.sphere.intersection(ray);
+    planeIntersection = this.plane.intersection(ray);
+    if (sphereIntersection === null || planeIntersection === null) {
       return null;
     }
-    si1 = si[0], si2 = si[1];
-    if (si1 > si2) {
-      _ref = [si2, si1], si1 = _ref[0], si2 = _ref[1];
-    }
-    pi1 = pi[0], pi2 = pi[1];
-    if (pi1 > pi2) {
-      _ref1 = [pi2, pi1], pi1 = _ref1[0], pi2 = _ref1[1];
-    }
-    if (si1 < pi1 && si2 < pi1) {
+    if (sphereIntersection.distance < planeIntersection.distance && sphereIntersection.distance2 < planeIntersection.distance) {
       return null;
     }
-    if (si1 > pi1 && si2 > pi1) {
-      this.reflectionProperties = this.sphere.reflectionProperties;
-      return this.sphere.norm(intersectionPoint, ray);
+    if (sphereIntersection.distance > planeIntersection.distance && sphereIntersection.distance2 > planeIntersection.distance) {
+      return sphereIntersection;
     }
-    if (si1 < pi1 && si2 > pi1) {
-      this.reflectionProperties = this.plane.reflectionProperties;
-      return this.plane.norm(intersectionPoint, ray);
+    if (sphereIntersection.distance < planeIntersection.distance && sphereIntersection.distance2 > planeIntersection.distance) {
+      return planeIntersection;
     }
     throw "Invalid state";
   };
 
+  /*intersection: (ray) ->
+    si = @sphere.solutions(ray)
+    pi = @plane.solutions(ray)
+  
+    # sphere intersection before plane intersection
+    return null unless si && pi
+  
+    [si1, si2] = si
+    [si1, si2] = [si2, si1] if si1 > si2
+  
+    [pi1, pi2] = pi
+    [pi1, pi2] = [pi2, pi1] if pi1 > pi2
+  
+    # sphere intersection before plane intersection
+    return null if si1 < pi1 && si2 < pi1
+  
+    # plane intersection before sphere intersection => sphere intersection
+    if si1 > pi1 && si2 > pi1
+      return @sphere.intersection(ray)
+  
+    # sphere intersection before plane intersection => plane intersection
+    if si1 < pi1 && si2 > pi1
+      return @plane.intersection(ray)
+  
+    throw "Invalid state"
+  */
+
+
   Hemisphere.prototype.solutions = function(ray) {
-    var pi, pi1, pi2, si, si1, si2, _ref, _ref1;
-    si = this.sphere.solutions(ray);
-    pi = this.plane.solutions(ray);
-    if (!(si && pi)) {
+    var i;
+    i = this.intersection(ray);
+    if (!i) {
       return null;
     }
-    si1 = si[0], si2 = si[1];
-    if (si1 > si2) {
-      _ref = [si2, si1], si1 = _ref[0], si2 = _ref[1];
-    }
-    pi1 = pi[0], pi2 = pi[1];
-    if (pi1 > pi2) {
-      _ref1 = [pi2, pi1], pi1 = _ref1[0], pi2 = _ref1[1];
-    }
-    if (si1 < pi1 && si2 < pi1) {
-      return null;
-    }
-    if (si1 > pi1 && si2 > pi1) {
-      this.reflectionProperties = this.sphere.reflectionProperties;
-      return si;
-    }
-    if (si1 < pi1 && si2 > pi1) {
-      this.reflectionProperties = this.plane.reflectionProperties;
-      return pi;
-    }
-    throw "Invalid state";
+    return [i.t1, i.t2];
   };
 
   return Hemisphere;

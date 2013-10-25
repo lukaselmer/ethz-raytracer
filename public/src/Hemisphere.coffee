@@ -2,31 +2,27 @@ class Hemisphere
 
   constructor: (@sphere, @plane) ->
 
-  norm: (intersectionPoint, ray) ->
-    si = @sphere.solutions(ray)
-    pi = @plane.solutions(ray)
+  intersection: (ray) ->
+    sphereIntersection = @sphere.intersection(ray)
+    planeIntersection = @plane.intersection(ray)
 
-    return null unless si && pi
+    # just one intersection
+    return null if sphereIntersection is null or planeIntersection is null
 
-    [si1, si2] = si
-    [si1, si2] = [si2, si1] if si1 > si2
+    # sphere before plane intersection -> miss
+    return null if sphereIntersection.distance < planeIntersection.distance and sphereIntersection.distance2 < planeIntersection.distance
 
-    [pi1, pi2] = pi
-    [pi1, pi2] = [pi2, pi1] if pi1 > pi2
+    # plane before sphere intersection -> intersection on sphere
+    return sphereIntersection if sphereIntersection.distance > planeIntersection.distance and sphereIntersection.distance2 > planeIntersection.distance
 
-    return null if si1 < pi1 && si2 < pi1
+    # plane between sphere intersections -> intersection on plane
+    return planeIntersection if sphereIntersection.distance < planeIntersection.distance and sphereIntersection.distance2 > planeIntersection.distance
 
-    if si1 > pi1 && si2 > pi1
-      @reflectionProperties = @sphere.reflectionProperties
-      return @sphere.norm(intersectionPoint, ray)
-
-    if si1 < pi1 && si2 > pi1
-      @reflectionProperties = @plane.reflectionProperties
-      return @plane.norm(intersectionPoint, ray)
-
+    # should never come here
     throw "Invalid state"
 
-  solutions: (ray) ->
+
+  ###intersection: (ray) ->
     si = @sphere.solutions(ray)
     pi = @plane.solutions(ray)
 
@@ -44,12 +40,15 @@ class Hemisphere
 
     # plane intersection before sphere intersection => sphere intersection
     if si1 > pi1 && si2 > pi1
-      @reflectionProperties = @sphere.reflectionProperties
-      return si
+      return @sphere.intersection(ray)
 
     # sphere intersection before plane intersection => plane intersection
     if si1 < pi1 && si2 > pi1
-      @reflectionProperties = @plane.reflectionProperties
-      return pi
+      return @plane.intersection(ray)
 
-    throw "Invalid state"
+    throw "Invalid state"###
+
+  solutions: (ray) ->
+    i = this.intersection(ray)
+    return null unless i
+    [i.t1, i.t2]

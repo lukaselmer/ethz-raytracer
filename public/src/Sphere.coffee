@@ -39,10 +39,8 @@ class Sphere
     return [t1, t1] if t2 < RayConfig.intersectionDelta
     [t1, t2]
 
-    ###intersection: (ray) ->
-    i = this.intersects(ray)
-    return false unless i
-
-    intersectionPoint = ray.line.anchor.add(ray.line.direction.multiply(i))
-    normal = this.norm(intersectionPoint)
-    [i, intersectionPoint, normal]###
+  intersection: (ray) ->
+    i = this.solutions(ray)
+    return null unless i
+    [t1, t2] = i
+    new Intersection(ray, this, this, t1, t2, @reflectionProperties)

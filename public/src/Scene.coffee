@@ -15,5 +15,5 @@ class Scene
     for figure in @objects
       dist = Intersection.intersectionExists(figure, ray)
       if dist && dist < min && dist > RayConfig.intersectionDelta
-        ret = new Intersection(figure, ray)
+        ret = figure.intersection(ray)
     ret

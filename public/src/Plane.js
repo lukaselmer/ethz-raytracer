@@ -13,17 +13,26 @@ Plane = (function() {
     return this.normal;
   };
 
-  Plane.prototype.solutions = function(ray) {
-    var d, perpendicularArea;
-    perpendicularArea = ray.line.direction.dot(this.normal);
-    if (perpendicularArea === 0) {
+  Plane.prototype.intersection = function(ray) {
+    var cos, d;
+    cos = ray.line.direction.dot(this.normal);
+    if (cos === 0) {
       return null;
     }
-    d = this.point.subtract(ray.line.anchor).dot(this.normal) / perpendicularArea;
+    d = this.point.subtract(ray.line.anchor).dot(this.normal) / cos;
     if (d < RayConfig.intersectionDelta) {
       return null;
     }
-    return [d, 0];
+    return new Intersection(ray, this, this, d, 0, this.reflectionProperties);
+  };
+
+  Plane.prototype.solutions = function(ray) {
+    var i;
+    i = this.intersection(ray);
+    if (!i) {
+      return null;
+    }
+    return [i.t1, i.t2];
   };
 
   return Plane;

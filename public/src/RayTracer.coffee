@@ -43,24 +43,24 @@ class RayTracer
     color
 
   reflectAndRefract: (intersection, ray, times) ->
-    obj = intersection.figure
+    f = intersection.figure
     [reflectedRay, refractedRay] = this.specularRays(intersection, ray)
     color = new Color(0, 0, 0)
     if reflectedRay?
       specularReflection = this.traceRec(reflectedRay, times - 1)
-      specularReflection = specularReflection.multiplyColor(obj.reflectionProperties.specularColor)
+      specularReflection = specularReflection.multiplyColor(f.reflectionProperties.specularColor)
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
       specularRefraction = this.traceRec(refractedRay, times - 1)
-      specularRefraction = specularRefraction.multiplyColor(obj.reflectionProperties.specularColor) unless ray.isInside() && RayConfig.strongRefraction
+      specularRefraction = specularRefraction.multiplyColor(f.reflectionProperties.specularColor) unless ray.isInside() && RayConfig.strongRefraction
       color = color.add specularRefraction.multiply(refractedRay.power)
     color
 
   specularRays: (intersection, ray) ->
     # the norm n (unit vector)
-    n = intersection.normal
+    n = intersection.getNormal()
     # the point of intersection p
-    p = intersection.point
+    p = intersection.getPoint()
     #n = obj.norm(pos) #.multiply(-1).toUnitVector()
     n = n.multiply(-1) if ray.isInside()
     # the view direction / input ray i (vector)
@@ -114,9 +114,9 @@ class RayTracer
 
   illuminate: (intersection, ray, light) ->
     f = intersection.figure
-    p = intersection.point
+    p = intersection.getPoint()
 
-    nv = intersection.normal
+    nv = intersection.getNormal()
 
     w = ray.line.direction
     wl = light.location.subtract(p).toUnitVector()

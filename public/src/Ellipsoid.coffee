@@ -38,3 +38,9 @@ class Ellipsoid
     ((oc.e(3) * oc.e(3)) / @radius_z_2) - 1
 
     Math.solveN2(a, b, c)
+
+  intersection: (ray) ->
+    i = this.solutions(ray)
+    return null unless i
+    [t1, t2] = i
+    new Intersection(ray, this, this, t1, t2, @reflectionProperties)

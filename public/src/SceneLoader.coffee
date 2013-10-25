@@ -78,7 +78,7 @@ class SceneLoader
     yellow = new ReflectionProperty(new Color(0.75, 0.75, 0), new Color(1, 1, 0), new Color(1, 1, 1), 32.0, Infinity)
     scene.addObject new Hemisphere(
       new Sphere($V([0, 0, 0]), 2, red),
-      new Plane($V([0, 0, 0]), $V([-1, 0, 1]), yellow))
+      new Plane($V([0, 0, 0]), $V([-1, 0, 1]).toUnitVector(), yellow))
 
 
     if ModuleId.SP1
