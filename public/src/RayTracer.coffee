@@ -146,7 +146,7 @@ class RayTracer
     camera = @scene.camera
 
     # so rays go through the middle of a pixel
-    antialiasing_translation_mean = (1 + antialiasing) / 2
+    antialiasing_translation_mean = (1 + (1 / antialiasing)) / 2
 
     x = [1..antialiasing]
 
