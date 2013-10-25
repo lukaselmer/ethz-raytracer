@@ -14,7 +14,7 @@ Plane = (function() {
   };
 
   Plane.prototype.intersection = function(ray) {
-    var cos, d;
+    var cos, d, epsilon;
     cos = ray.line.direction.dot(this.normal);
     if (cos === 0) {
       return null;
@@ -23,7 +23,8 @@ Plane = (function() {
     if (d < RayConfig.intersectionDelta) {
       return null;
     }
-    return new Intersection(ray, this, this, d, 0, this.reflectionProperties);
+    epsilon = 0.01;
+    return new Intersection(ray, this, this, d, d - epsilon, this.reflectionProperties);
   };
 
   Plane.prototype.solutions = function(ray) {

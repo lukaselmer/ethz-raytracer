@@ -14,6 +14,7 @@ class Scene
     ret = null
     for figure in @objects
       dist = Intersection.intersectionExists(figure, ray)
-      if dist && dist < min && dist > RayConfig.intersectionDelta
+      if dist != null && dist < min #&& dist > RayConfig.intersectionDelta
         ret = figure.intersection(ray)
+        min = dist
     ret

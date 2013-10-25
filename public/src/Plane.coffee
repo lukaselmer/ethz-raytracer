@@ -10,7 +10,8 @@ class Plane
     return null if cos == 0
     d = @point.subtract(ray.line.anchor).dot(@normal) / cos
     return null if d < RayConfig.intersectionDelta
-    new Intersection(ray, this, this, d, 0, @reflectionProperties)
+    epsilon = 0.01
+    new Intersection(ray, this, this, d, d - epsilon, @reflectionProperties)
 
   solutions: (ray) ->
     i = this.intersection(ray)

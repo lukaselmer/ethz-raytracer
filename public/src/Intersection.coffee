@@ -33,10 +33,10 @@ class Intersection
 
   # Performance optimization
   @intersectionExists: (figure, ray) ->
-    #i = figure.intersection(ray)
-    #return null unless i
-    #i.distance
-    sol = figure.solutions(ray)
-    return null unless sol
-    Math.min(sol[0], sol[1])
+    i = figure.intersection(ray)
+    return null unless i
+    i.distance
+    #sol = figure.solutions(ray)
+    #return null unless sol
+    #Math.min(sol[0], sol[1])
 
