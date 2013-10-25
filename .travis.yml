@@ -1,6 +1,5 @@
 language: node_js
 before_script:
-  - npm install
   - npm install -g grunt-cli karma
   - grunt prepare_test
   
