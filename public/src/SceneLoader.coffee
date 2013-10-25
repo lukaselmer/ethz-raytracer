@@ -107,7 +107,7 @@ class SceneLoader
   loadAlternative: (scene) ->
     # alternative scene
     c = Color.random()
-    scene.addObject(new Sphere($V([0, 0, 0]), 2,
+    scene.addObject(new Sphere($V([-3, 3, 0]), 2,
       new ReflectionProperty(c, c, new Color(1, 1, 1), 32, 1.5)))
 
     c = Color.random()
@@ -119,11 +119,22 @@ class SceneLoader
       new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
 
     c = Color.random()
-    scene.addObject(new Sphere($V([0, -.75, 3]), 0.5,
+    scene.addObject(new Sphere($V([-2, -0.75, 3]), 0.5,
       new ReflectionProperty(c, c, new Color(0.5, 0.5, 1), 16, 1.5)))
 
     scene.addObject(new Sphere($V([2.5, 0, -1]), 0.5,
       new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)))
+
+    sphere1 = new Sphere($V([0, 0.5, 3]), 1, null)
+    sphere2 = new Sphere($V([0, -0.5, 3]), 1, null)
+    m1 = new MultipleObjectsIntersection(sphere1, sphere2, null)
+    sphere1 = new Sphere($V([0.5, 0, 3]), 1, null)
+    sphere2 = new Sphere($V([-0.5, 0, 3]), 1, null)
+    m2 = new MultipleObjectsIntersection(sphere1, sphere2, null)
+
+    mtot = new MultipleObjectsIntersection(m1, m2,
+      new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5))
+    scene.addObject(mtot)
 
 
 this.SceneLoader = SceneLoader
