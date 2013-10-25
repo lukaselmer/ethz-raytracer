@@ -24,8 +24,9 @@ This raytracer is written in Coffeescript, which is very similar and compiles do
 Code structure
 --------------
 
-```
 Overview of the public folder:
+
+```
 |   index.html
 |
 +---data (data used in ex. 3)
