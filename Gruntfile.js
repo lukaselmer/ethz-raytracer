@@ -21,6 +21,16 @@ module.exports = function (grunt) {
                 files: {
                     './public/out/compiled.js': ['./public/src/**/*.coffee']
                 }
+            },
+			prepare_test: {
+                options: {
+                    join: true,
+                    sourceMap: true,
+                    bare: true
+                },
+                files: {
+                    './test/out/compiled.js': ['./public/src/**/*.coffee', './test/**/*.coffee']
+                }
             }
         },
         uglify: {
@@ -43,18 +53,6 @@ module.exports = function (grunt) {
                 browsers: ['PhantomJS']
             },
             unit: {
-            }
-        },
-        prepare_test: {
-            compile: {
-                options: {
-                    join: true,
-                    sourceMap: true,
-                    bare: true
-                },
-                files: {
-                    './test/out/compiled.js': ['./public/src/**/*.coffee']
-                }
             }
         }
 
@@ -120,6 +118,7 @@ module.exports = function (grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['coffee']);
+    grunt.registerTask('default', ['coffee:compile']);
+	grunt.registerTask('prepare_test', ['coffee:prepare_test']);
 
 };
