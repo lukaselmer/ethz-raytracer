@@ -12,7 +12,7 @@ class MultipleObjectsIntersection
 
     f = if i21 < i11 then @figure1 else @figure2
 
-    return f.norm(intersectionPoint, ray)
+    f.norm(intersectionPoint, ray)
 
   solutions: (ray) ->
     i = this.intersection(ray)
