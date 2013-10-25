@@ -114,7 +114,7 @@
         var data = canv.toDataURL("image/png").replace("image/png", "image/octet-stream");
         var a = document.createElement('a');
         a.href = data;
-        a.download = "cg-exN-lukaselmer-moduleid.png";
+        a.download = "cg-ex2-lukaselmer-XXXXXXXXXXXXXXXXXXXXX.png";
         a.click();
         return false;
     }
