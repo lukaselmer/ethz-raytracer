@@ -41,13 +41,6 @@ class Cylinder
       return [t1, t2]
     return [t2, t1]
 
-  intersects: (ray) ->
-    [t1, t2] = this.solutions(ray)
-    # same as Math.min t1, t2
-    if t1 > t2
-      throw "Invalid state: t1=#{t1} > t2=#{t2}"
-    t1
-
   intersection: (ray) ->
     i = this.intersects(ray)
     return null unless i

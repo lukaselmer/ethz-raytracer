@@ -3,50 +3,26 @@ class Hemisphere
   constructor: (@sphere, @plane) ->
 
   intersection: (ray) ->
-    sphereIntersection = @sphere.intersection(ray)
-    planeIntersection = @plane.intersection(ray)
+    s = @sphere.intersection(ray)
+    p = @plane.intersection(ray)
 
-    # just one intersection
-    return null if sphereIntersection is null or planeIntersection is null
+    # one intersection
+    return null unless s && p
 
-    # sphere before plane intersection -> miss
-    return null if sphereIntersection.distance < planeIntersection.distance and sphereIntersection.distance2 < planeIntersection.distance
-
-    # plane before sphere intersection -> intersection on sphere
-    return sphereIntersection if sphereIntersection.distance > planeIntersection.distance and sphereIntersection.distance2 > planeIntersection.distance
-
-    # plane between sphere intersections -> intersection on plane
-    return planeIntersection if sphereIntersection.distance < planeIntersection.distance and sphereIntersection.distance2 > planeIntersection.distance
-
-    # should never come here
-    throw "Invalid state"
-
-
-  ###intersection: (ray) ->
-    si = @sphere.solutions(ray)
-    pi = @plane.solutions(ray)
+    s1 = s.distance
+    s2 = s.distance2
+    p1 = p.distance
 
     # sphere intersection before plane intersection
-    return null unless si && pi
+    return null if s1 < p1 && s2 < p1
 
-    [si1, si2] = si
-    [si1, si2] = [si2, si1] if si1 > si2
+    # plane intersection before sphere intersection
+    return s if s1 > p1 && s2 > p1
 
-    [pi1, pi2] = pi
-    [pi1, pi2] = [pi2, pi1] if pi1 > pi2
+    # plane intersection between sphere intersections
+    return p if s1 < p1 && s2 > p1
 
-    # sphere intersection before plane intersection
-    return null if si1 < pi1 && si2 < pi1
-
-    # plane intersection before sphere intersection => sphere intersection
-    if si1 > pi1 && si2 > pi1
-      return @sphere.intersection(ray)
-
-    # sphere intersection before plane intersection => plane intersection
-    if si1 < pi1 && si2 > pi1
-      return @plane.intersection(ray)
-
-    throw "Invalid state"###
+    throw "Invalid state: s1: #{s2}, s1: #{s2}, p1: #{p1}"
 
   solutions: (ray) ->
     i = this.intersection(ray)
