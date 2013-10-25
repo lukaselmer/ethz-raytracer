@@ -150,7 +150,11 @@ class RayTracer
 
     arr = []
 
-    if RayConfig.antialiasingTechnique == 'grid' || antialiasing == 1
+    if antialiasing == 1
+      pixelX = ((@pixelX + 0.5) - (camera.width / 2))
+      pixelY = ((@pixelY + 0.5) - (camera.height / 2)) * -1
+      arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+    else if RayConfig.antialiasingTechnique == 'grid'
       x = [1..antialiasing]
       for i in x
         for j in x
