@@ -1,20 +1,82 @@
-ethz-raytracer
+Ethz Raytracer
 ==============
 
 A raytracer for the computer graphics course at ethz.
 
 
-Template description
---------------------
+Compilation instructions
+------------------------
 
-A small code base has already been written for you. In particular, we
-provide you with the interface, as well as a basic matrix/vector library.
+This raytracer is written in Coffeescript, which is very similar and compiles down to JavaScript. To compile the coffeescript sources:
 
-The "data" folder and the files "read_obj.js" and "read_tga.js" are only used in Exercise 3, so don't worry about them for Exercise 2.
+* Install NodeJS
+* `npm install`
+* `npm install -g grunt-cli`
+* `grunt`
 
-To run the framework, you need to start raytracer.html in your browser (recent versions of Firefox and Chrome are supported, don't use IE)
 
-We recommend you to take a look at the code and read through the comments. You can start coding in "src/raytracer.js"
+Code structure
+--------------
 
-To export your rendered images as PNG, just click Export. It will download the image.
+Overview of the public folder:
+|   index.html
+|
++---data (data used in ex. 3)
+|       Earth.tga
+|       EarthNormal.tga
+|       Moon.tga
+|       MoonNormal.tga
+|       sphere.obj
+|
++---lib (libraries used for the raytracer)
+|       read_obj.js
+|       read_tga.js
+|       startup.js
+|       sylvester.src.js
+|
++---out (compiled JS files)
+|       compiled.js
+|       compiled.js.map
+|       compiled.src.coffee
+|
++---output (rendered images)
+|       cg-ex2-lukaselmer-A1.png
+|       cg-ex2-lukaselmer-A1B1.png
+|       cg-ex2-lukaselmer-A1B1B2.png
+|       cg-ex2-lukaselmer-A1B2.png
+|       cg-ex2-lukaselmer-B3.png
+|       cg-ex2-lukaselmer-B3B1.png
+|       cg-ex2-lukaselmer-B3B1B2.png
+|       cg-ex2-lukaselmer-B3B2.png
+|       cg-ex2-lukaselmer-B4.png
+|       cg-ex2-lukaselmer-B4B1.png
+|       cg-ex2-lukaselmer-B4B1B2.png
+|       cg-ex2-lukaselmer-moduleid.png
+|
+\---src (source code)
+    |   Camera.coffee
+    |   Color.coffee
+    |   helpers.coffee
+    |   Intersection.coffee
+    |   Light.coffee
+    |   LightIntensity.coffee
+    |   Ray.coffee
+    |   RayConfig.coffee
+    |   RayTracer.coffee
+    |   ReflectionProperty.coffee
+    |   Scene.coffee
+    |   SceneLoader.coffee
+    |
+    \---figures (the different objects which can be rendered)
+            Cylinder.coffee
+            Ellipsoid.coffee
+            Hemisphere.coffee
+            MultipleObjectsIntersection.coffee
+            Plane.coffee
+            Sphere.coffee
+			
+Unit Tests
+----------
+
+Although there are only few tests yet, a unit testing framework is prepared. To execute the tests run `grunt karma`.
 
