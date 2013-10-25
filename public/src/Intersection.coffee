@@ -14,7 +14,7 @@ class Intersection
       @distance2 = @t2
 
   getNormal: () ->
-    @normal = @normalFigure.norm(this.getPoint()) unless @normal
+    @normal = @normalFigure.norm(this.getPoint(), @ray) unless @normal
     @normal
 
   getPoint: () ->

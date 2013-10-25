@@ -2,7 +2,7 @@ class Sphere
   constructor: (@center, @radius, @reflectionProperties) ->
     @radiusSquared = @radius * @radius
 
-  norm: (intersectionPoint) ->
+  norm: (intersectionPoint, ray) ->
     intersectionPoint.subtract(@center).toUnitVector()
 
   solutions: (ray) ->

@@ -6,7 +6,7 @@ class Ellipsoid
     @radius_y_2 = Math.square @radius_y
     @radius_z_2 = Math.square @radius_z
 
-  norm: (intersectionPoint) ->
+  norm: (intersectionPoint, ray) ->
     # This is the naive way:
     # zz = intersectionPoint.subtract(@center)
     # nx = 2 * zz.e(1) / @radius_x_2

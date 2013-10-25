@@ -4,7 +4,7 @@ class Cylinder
     @radius_y_2 = Math.square(@radius_y)
     @radius_z_2 = Math.square(@radius_z)
 
-  norm: (intersectionPoint) ->
+  norm: (intersectionPoint, ray) ->
     intersection = $V([((if @fixed_x then 0 else (intersectionPoint.e(1)) / @radius_x_2)),
               ((if @fixed_y then 0 else (intersectionPoint.e(2)) / @radius_y_2)),
               ((if @fixed_z then 0 else (intersectionPoint.e(3)) / @radius_z_2))])

@@ -91,7 +91,7 @@ class SceneLoader
 
       mtot = new MultipleObjectsIntersection(m1, m2,
         new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5))
-      #scene.addObject(mtot)
+      scene.addObject(mtot)
 
       cylinder = new Cylinder($V([0, 0, 0]), false, true, false, 2, 0, 1, null)
       sphere1 = new Sphere($V([-2, 1.25, 0]), 1, null)
