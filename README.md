@@ -27,61 +27,62 @@ Code structure
 Overview of the public folder:
 
 ```
-|   index.html
-|
-+---data (data used in ex. 3)
-|       Earth.tga
-|       EarthNormal.tga
-|       Moon.tga
-|       MoonNormal.tga
-|       sphere.obj
-|
-+---lib (libraries used for the raytracer)
-|       read_obj.js
-|       read_tga.js
-|       startup.js
-|       sylvester.src.js
-|
-+---out (compiled JS files)
-|       compiled.js
-|       compiled.js.map
-|       compiled.src.coffee
-|
-+---output (rendered images)
-|       cg-ex2-lukaselmer-A1.png
-|       cg-ex2-lukaselmer-A1B1.png
-|       cg-ex2-lukaselmer-A1B1B2.png
-|       cg-ex2-lukaselmer-A1B2.png
-|       cg-ex2-lukaselmer-B3.png
-|       cg-ex2-lukaselmer-B3B1.png
-|       cg-ex2-lukaselmer-B3B1B2.png
-|       cg-ex2-lukaselmer-B3B2.png
-|       cg-ex2-lukaselmer-B4.png
-|       cg-ex2-lukaselmer-B4B1.png
-|       cg-ex2-lukaselmer-B4B1B2.png
-|       cg-ex2-lukaselmer-moduleid.png
-|
-\---src (source code)
-    |   Camera.coffee
-    |   Color.coffee
-    |   helpers.coffee
-    |   Intersection.coffee
-    |   Light.coffee
-    |   LightIntensity.coffee
-    |   Ray.coffee
-    |   RayConfig.coffee
-    |   RayTracer.coffee
-    |   ReflectionProperty.coffee
-    |   Scene.coffee
-    |   SceneLoader.coffee
-    |
-    \---figures (the different objects which can be rendered)
-            Cylinder.coffee
-            Ellipsoid.coffee
-            Hemisphere.coffee
-            MultipleObjectsIntersection.coffee
-            Plane.coffee
-            Sphere.coffee
+├── data (data used in ex. 3)
+│   ├── Earth.tga
+│   ├── EarthNormal.tga
+│   ├── Moon.tga
+│   ├── MoonNormal.tga
+│   └── sphere.obj
+├── index.html (the main file to be opened in the browser)
+├── lib (libraries used for the raytracer)
+│   ├── bootstrap.min.js
+│   ├── jquery-1.10.2.min.js
+│   ├── read_obj.js
+│   ├── read_tga.js
+│   ├── startup.js
+│   └── sylvester.src.js
+├── out (compiled JS files)
+│   ├── compiled.js
+│   ├── compiled.js.map
+│   ├── compiled.min.js
+│   ├── compiled.src.coffee
+│   ├── compiled.src.js
+│   ├── compiled.src.map
+│   ├── v1_compiled.js
+│   └── v1_compiled.js.map
+├── output (rendered images)
+│   ├── cg-ex2-lukaselmer-A1.png
+│   ├── cg-ex2-lukaselmer-A1B1.png
+│   ├── cg-ex2-lukaselmer-A1B1B2.png
+│   ├── cg-ex2-lukaselmer-A1B2.png
+│   ├── cg-ex2-lukaselmer-B3.png
+│   ├── cg-ex2-lukaselmer-B3B1.png
+│   ├── cg-ex2-lukaselmer-B3B1B2.png
+│   ├── cg-ex2-lukaselmer-B3B2.png
+│   ├── cg-ex2-lukaselmer-B4.png
+│   ├── cg-ex2-lukaselmer-B4B1.png
+│   ├── cg-ex2-lukaselmer-B4B1B2.png
+│   └── cg-ex2-lukaselmer-moduleid.png
+└── src (source code)
+    ├── Camera.coffee
+    ├── Color.coffee
+    ├── Intersection.coffee
+    ├── Light.coffee
+    ├── LightIntensity.coffee
+    ├── Ray.coffee
+    ├── RayConfig.coffee
+    ├── RayTracer.coffee
+    ├── ReflectionProperty.coffee
+    ├── Scene.coffee
+    ├── SceneLoader.coffee
+    ├── figures (the different objects which can be rendered)
+    │   ├── Cylinder.coffee
+    │   ├── Ellipsoid.coffee
+    │   ├── Hemisphere.coffee
+    │   ├── MultipleObjectsIntersection.coffee
+    │   ├── Plane.coffee
+    │   └── Sphere.coffee
+    └── helpers.coffee
 ```			
 			
 Unit Tests
@@ -117,10 +118,4 @@ The two quadrics are implemented.
 ### B4: Boolean operations
 
 The boolean operations are implemented.
-
-
-
-
-
-
 
