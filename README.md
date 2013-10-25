@@ -8,6 +8,7 @@ Live demo
 
 The renderer is deployed to https://raytracer-eth.renuo.ch/
 
+Alternatively, the repository can be cloned from https://github.com/lukaselmer/ethz-raytracer , but then the code first has to be compiled (see compilation instructions).
 
 Compilation instructions
 ------------------------
