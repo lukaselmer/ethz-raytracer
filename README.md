@@ -3,6 +3,11 @@ Ethz Raytracer
 
 A raytracer for the computer graphics course at ethz.
 
+Live demo
+---------
+
+The renderer is deployed to https://raytracer-eth.renuo.ch/
+
 
 Compilation instructions
 ------------------------
