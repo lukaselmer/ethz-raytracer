@@ -44,6 +44,18 @@ module.exports = function (grunt) {
             },
             unit: {
             }
+        },
+        prepare_test: {
+            compile: {
+                options: {
+                    join: true,
+                    sourceMap: true,
+                    bare: true
+                },
+                files: {
+                    './test/out/compiled.js': ['./public/src/**/*.coffee']
+                }
+            }
         }
 
 
