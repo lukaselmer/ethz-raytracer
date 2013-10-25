@@ -19,7 +19,7 @@ module.exports = function (grunt) {
                     sourceMap: true
                 },
                 files: {
-                    './public/out/compiled.js': ['./public/src/*.coffee']
+                    './public/out/compiled.js': ['./public/src/**/*.coffee']
                 }
             }
         },
@@ -108,6 +108,6 @@ module.exports = function (grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['coffee', 'uglify']);
+    grunt.registerTask('default', ['coffee']);
 
 };
