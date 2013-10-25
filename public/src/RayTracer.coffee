@@ -148,25 +148,37 @@ class RayTracer
     # so rays go through the middle of a pixel
     antialiasing_translation_mean = (1 + (1 / antialiasing)) / 2
 
-    x = [1..antialiasing]
-
     arr = []
 
-    for i in x
-      for j in x
+    if RayConfig.antialiasingTechnique == 'grid' || antialiasing == 1
+      x = [1..antialiasing]
+      for i in x
+        for j in x
+          # translate pixels, so that 0/0 is in the center of the image
+          pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+    else if RayConfig.antialiasingTechnique == 'random'
+      x = [1..(antialiasing*antialiasing)]
+      for i in x
         # translate pixels, so that 0/0 is in the center of the image
-        pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-        pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+        pixelX = ((@pixelX + Math.random(antialiasing_translation_mean / 2) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+        pixelY = ((@pixelY + Math.random(antialiasing_translation_mean / 2) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+        arr.push this.calcRayForPixel(camera, pixelX, pixelY)
 
-        # calculate point in imagePane in 3D
-        p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
-        p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
 
-        # vector from camera position to point in image pane
-        direction = p.subtract(camera.position)
-
-        # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
-        arr.push new Ray($L(camera.position, direction), 1, 1)
     arr
+
+  calcRayForPixel: (camera, pixelX, pixelY) ->
+    # calculate point in imagePane in 3D
+    p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
+    p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
+
+    # vector from camera position to point in image pane
+    direction = p.subtract(camera.position)
+
+    # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
+    new Ray($L(camera.position, direction), 1, 1)
+
 
 this.RayTracer = RayTracer
