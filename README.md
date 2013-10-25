@@ -80,3 +80,38 @@ Unit Tests
 
 Although there are only few tests yet, a unit testing framework is prepared. To execute the tests run `grunt karma`.
 
+
+Implemented Features
+--------------------
+
+The following features have been implemented:
+
+### A1: Basic features
+
+* Ray casting
+* Ray-object intersection
+* Shadows
+* Phong lighting model
+
+### B1: Specular reflection and specular refraction
+
+The algorithm is programmed recursively.
+
+### B2: Anti-aliasing
+
+Anti-aliasing is implemented with a regular grid. Currently, there are no textures and with the current setup, no unwanted aliasing could be observed.
+
+### B3: Quadrics
+
+The two quadrics are implemented.
+
+### B4: Boolean operations
+
+The boolean operations are implemented.
+
+
+
+
+
+
+
