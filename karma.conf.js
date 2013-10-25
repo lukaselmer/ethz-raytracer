@@ -17,7 +17,7 @@ module.exports = function(config) {
       'public/lib/jquery-1.10.2.min.js',
       'public/lib/**/*.js',
       'test/**/*.js',
-      'public/src/**/*.js'
+      'test/out/**/*.js'
     ],
 
 
