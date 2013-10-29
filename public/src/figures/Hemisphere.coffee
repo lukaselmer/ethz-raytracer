@@ -24,7 +24,7 @@ class Hemisphere
 
     throw "Invalid state: s1: #{s2}, s1: #{s2}, p1: #{p1}"
 
-  solutions: (ray) ->
-    i = this.intersection(ray)
-    return null unless i
-    [i.t1, i.t2]
+  #solutions: (ray) ->
+  #  i = this.intersection(ray)
+  #  return null unless i
+  #  [i.t1, i.t2]

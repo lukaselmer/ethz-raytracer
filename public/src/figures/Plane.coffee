@@ -15,7 +15,7 @@ class Plane
     return null if distance < RayConfig.intersectionDelta
 
     epsilon = 0.01
-    new Intersection(ray, this, this, distance, distance - epsilon, @reflectionProperties)
+    new Intersection(ray, this, this, distance, 0, @reflectionProperties)
 
   solutions: (ray) ->
     i = this.intersection(ray)

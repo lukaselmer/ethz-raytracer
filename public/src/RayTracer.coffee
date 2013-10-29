@@ -35,7 +35,11 @@ class RayTracer
 
     if RayConfig.illumination
       for light in @scene.lights
-        color = color.add(this.illuminate(intersection, ray, light))
+        cn = this.illuminate(intersection, ray, light)
+        if isNaN(cn.val.elements[0])
+          console.log cn
+          throw "Uh oh! #{cn}"
+        color = color.add(cn)
 
     return color if times <= 0
 
@@ -136,10 +140,14 @@ class RayTracer
     ks = f.reflectionProperties.specularColor
     frac = Math.pow(wr.dot(wl), n) / nv.dot(wl)
     spepcularIntensity = frac * E
-    spepcularIntensity = 0 if frac < 0
+    spepcularIntensity = 0 if frac < 0 || isNaN(spepcularIntensity)
     specularHighlights = ks.multiply(spepcularIntensity)
 
-    ambientColor.add(diffuse).add(specularHighlights)
+    color = ambientColor.add(diffuse).add(specularHighlights)
+
+    raise "Invalid state #{color}" if isNaN(color.val.elements[0])
+
+    color
 
 
   castRays: (antialiasing) ->
