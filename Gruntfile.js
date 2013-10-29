@@ -54,6 +54,15 @@ module.exports = function (grunt) {
             },
             unit: {
             }
+        },
+        watch: {
+            scripts: {
+                files: ['**/*.coffee'],
+                tasks: ['coffee:compile', 'coffee:prepare_test'],
+                options: {
+                    spawn: false
+                }
+            }
         }
 
 
