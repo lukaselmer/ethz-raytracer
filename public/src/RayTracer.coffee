@@ -1,13 +1,13 @@
 class RayTracer
-  constructor: (@pixelX, @pixelY, @scene) ->
+  constructor: (@scene) ->
 
-  trace: () ->
+  trace: (pixelX, pixelY) ->
     # 1. shoot a ray determined from the camera parameters and the pixel position in the image
     # 2. intersect the ray to scene elements and determine the closest one
     # 3. check if the intersection point is illuminated by each light source
     # 4. shade the intersection point using the meterial attributes and the lightings
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
-    rays = this.castRays(RayConfig.antialiasing)
+    rays = this.castRays(RayConfig.antialiasing, pixelX, pixelY)
 
     console.setRlog()
 
@@ -150,7 +150,7 @@ class RayTracer
     color
 
 
-  castRays: (antialiasing) ->
+  castRays: (antialiasing, abstractPixelX, abstractPixelY) ->
     camera = @scene.camera
 
     # so rays go through the middle of a pixel
@@ -159,24 +159,24 @@ class RayTracer
     arr = []
 
     if antialiasing == 1
-      pixelX = ((@pixelX + 0.5) - (camera.width / 2))
-      pixelY = ((@pixelY + 0.5) - (camera.height / 2)) * -1
+      pixelX = ((abstractPixelX + 0.5) - (camera.width / 2))
+      pixelY = ((abstractPixelY + 0.5) - (camera.height / 2)) * -1
       arr.push this.calcRayForPixel(camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'grid'
       x = [1..antialiasing]
       for i in x
         for j in x
           # translate pixels, so that 0/0 is in the center of the image
-          pixelX = ((@pixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-          pixelY = ((@pixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          pixelX = ((abstractPixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((abstractPixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
           arr.push this.calcRayForPixel(camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'random'
       x = [1..(antialiasing*antialiasing)]
       z = antialiasing_translation_mean / 2
       for i in x
         # translate pixels, so that 0/0 is in the center of the image
-        pixelX = ((@pixelX + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-        pixelY = ((@pixelY + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+        pixelX = ((abstractPixelX + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+        pixelY = ((abstractPixelY + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
         arr.push this.calcRayForPixel(camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'jittered'
       x = [1..antialiasing]
@@ -185,8 +185,8 @@ class RayTracer
       for i in x
         for j in x
           # translate pixels, so that 0/0 is in the center of the image
-          pixelX = ((@pixelX + i/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-          pixelY = ((@pixelY + j/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          pixelX = ((abstractPixelX + i/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((abstractPixelY + j/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
           arr.push this.calcRayForPixel(camera, pixelX, pixelY)
 
 
