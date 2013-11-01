@@ -22,14 +22,14 @@ module.exports = function (grunt) {
                     './public/out/compiled.js': ['./public/src/**/*.coffee']
                 }
             },
-			prepare_test: {
+            prepare_test: {
                 options: {
                     join: true,
                     sourceMap: true,
                     bare: true
                 },
                 files: {
-                    './test/out/compiled.js': ['./public/src/**/*.coffee', './test/**/*.coffee']
+                    './test/out/compiled.js': ['./public/src/**/*.coffee', './test/*.coffee']
                 }
             }
         },
@@ -58,9 +58,24 @@ module.exports = function (grunt) {
         watch: {
             scripts: {
                 files: ['**/*.coffee'],
-                tasks: ['coffee:compile', 'coffee:prepare_test'],
+                tasks: ['coffee:compile', 'coffee:prepare_test', 'notify:compile'],
                 options: {
                     spawn: false
+                }
+            }
+        },
+        notify_hooks: {
+            options: {
+                enabled: true
+                //max_jshint_notifications: 5, // maximum number of notifications from jshint output
+                //title: "Project Name" // defaults to the name in package.json, or uses project's directory name, you can change to the name of your project
+            }
+        },
+        notify: {
+            compile: {
+                options: {
+                    title: 'Compilation done',
+                    message: 'Compilation done'
                 }
             }
         }
@@ -124,10 +139,15 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-coffee');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-notify');
+
+
+    grunt.task.run('notify_hooks');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['coffee:compile']);
 	grunt.registerTask('prepare_test', ['coffee:prepare_test']);
+
 
 };

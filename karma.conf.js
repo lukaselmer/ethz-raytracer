@@ -26,10 +26,10 @@ module.exports = function(config) {
         'public/lib/startup.js',
     ],
 
-
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress'],
+    //reporters: ['progress'],
+    reporters: ['progress', 'osx'],
 
 
     // web server port
