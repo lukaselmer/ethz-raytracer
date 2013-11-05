@@ -1,4 +1,6 @@
 class Color
+  @fromVector: (vec) ->
+    new Color(vec.e(1), vec.e(2), vec.e(3))
   @random: () ->
     new Color(Math.random(), Math.random(), Math.random())
   constructor: (r, g, b) ->

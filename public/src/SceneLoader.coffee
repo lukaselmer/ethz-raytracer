@@ -6,8 +6,8 @@ class SceneLoader
   loadDefaults: () ->
     fieldOfView = 40 / 180 * Math.PI
     #fieldOfView = 30 / 180 * Math.PI
-    camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width,
-      RayConfig.height)
+    #camera = new Camera($V([2, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 1, fieldOfView, RayConfig.width,
+    camera = new Camera($V([0, 0, 10]), $V([0, 0, -1]), $V([0, 1, 0]), 8.5, fieldOfView, RayConfig.width, RayConfig.height)
     #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 
     scene = new Scene(camera, 0.2)
@@ -25,6 +25,12 @@ class SceneLoader
       this.loadB3(scene)
     else if ModuleId.B4
       this.loadB4(scene)
+    else if ModuleId.C1
+      this.loadC1(scene)
+    else if ModuleId.C3
+      this.loadC3(scene)
+    else if ModuleId.D1
+      this.loadD1(scene)
     else
       this.loadOriginal(scene)
 
@@ -101,7 +107,33 @@ class SceneLoader
       scene.addObject new MultipleObjectsIntersection(cylinder, sphere1, new ReflectionProperty(new Color(0.75, 0, 0),
         new Color(1, 0, 0), new Color(1, 1, 1), 32, 1.75))
 
+  loadC1: (scene) ->
+    # original scene
+    scene.addObject(new Sphere($V([0, 0, 0]), 2,
+      new ReflectionProperty(new Color(1, 1, 0), new Color(1, 1, 0), new Color(1, 1, 1), 32, Infinity)))
+    scene.addObject(new Sphere($V([1.25, 1.25, 3]), 0.5,
+      new ReflectionProperty(new Color(0, 1, 1), new Color(0, 1, 1), new Color(1, 1, 1), 32, Infinity)))
+      #new ReflectionProperty(new Color(0, 1, 1), new Color(0, 1, 1), new Color(1, 1, 1), 16, 1.5)))
 
+    if ModuleId.SP1
+      scene.addObject(new Plane($V([0, -1, 0]), $V([1, 1, 0]),
+        new ReflectionProperty(new Color(0, 0.75, 0.75), new Color(0, 1, 1), new Color(0.5, 1, 1), 16, Infinity)))
+
+
+  loadC3: (scene) ->
+    sphereMesh1 = readOBJ("data/sphere.obj", $V([0, 0, 0]), 2)
+    sphereMesh1.material = new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)
+    sphereMesh2 = readOBJ("data/sphere.obj", $V([1.25, 1.25, 3]), 0.5)
+    sphereMesh2.material = new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)
+    scene.addObject sphereMesh1
+    scene.addObject sphereMesh2
+
+  loadD1: (scene) ->
+    for i in [0..9]
+      for j in [0..9]
+        for k in [0..9]
+          scene.addObject new Sphere($V([i - 4.5, j - 4.5, -Math.pow(k, 3)]), 0.25,
+            new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5))
 
 
   loadAlternative: (scene) ->

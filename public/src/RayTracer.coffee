@@ -14,13 +14,39 @@ class RayTracer
     traceRay = (ray) =>
       this.traceRec(ray, RayConfig.recDepth)
 
-    colors = rays.map (ray) ->
-      traceRay(ray)
+    colors = {center: [], left: [], right: []}
 
-    averageColorVector = colors.map((c) ->
-      c.toVector()).reduce((previous, current) ->
-      previous.add(current)).multiply(1 / colors.length)
-    averageColorVector
+    for ray in rays
+      colors[ray.eye].push traceRay(ray)
+
+    #colors = rays.map (ray) ->
+    #  traceRay(ray)
+
+    colorVectors = {}
+    arr = if ModuleId.C1 then ['left', 'right'] else ['center']
+    for eye in arr
+      colorVectors[eye] = colors[eye].map((c) ->
+        c.toVector()).reduce((previous, current) ->
+        previous.add(current)).multiply(1 / colors[eye].length)
+
+    if ModuleId.C1
+      lm = $M([
+        [0.3, 0.59, 0.11],
+        [0, 0, 0],
+        [0, 0, 0]
+      ])
+      rm = $M([
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ])
+
+      leftV = lm.multiply(colorVectors['left'])
+      rightV = rm.multiply(colorVectors['right'])
+      return leftV.add(rightV)
+    else
+      return colorVectors['center']
+
 
   traceRec: (ray, times) ->
     color = new Color(0, 0, 0)
@@ -86,14 +112,14 @@ class RayTracer
 
     # Total reflection!
     if n2 == Infinity
-      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power, ray.eye), null]
 
     ratio = n1 / n2
     sin_theta_t_2 = Math.square(ratio) * (1 - Math.square(cos_theta_i))
 
     if sin_theta_t_2 > 1
       # Total reflection!
-      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power, ray.eye), null]
 
     cos_theta_t = Math.sqrt(1 - sin_theta_t_2)
     refractionDirection = i.multiply(ratio).add(n.multiply((ratio * cos_theta_i) - cos_theta_t)).toUnitVector()
@@ -107,13 +133,13 @@ class RayTracer
 
     unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
       # Total reflection!
-      return [new Ray($L(p, reflectionDirection), n1, ray.power), null]
+      return [new Ray($L(p, reflectionDirection), n1, ray.power, ray.eye), null]
 
     unless 0 <= reflectionPowerRatio <= 1 && 0 <= refractionPowerRatio <= 1
       throw "Invalid state: reflectionPowerRatio: #{reflectionPowerRatio}, refractionPowerRatio: #{refractionPowerRatio}"
 
-    return [new Ray($L(p, reflectionDirection), n1, ray.power * reflectionPowerRatio),
-            new Ray($L(p, refractionDirection), n2, ray.power * refractionPowerRatio)]
+    return [new Ray($L(p, reflectionDirection), n1, ray.power * reflectionPowerRatio, ray.eye),
+            new Ray($L(p, refractionDirection), n2, ray.power * refractionPowerRatio, ray.eye)]
 
 
   illuminate: (intersection, ray, light) ->
@@ -127,7 +153,8 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
-    return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1))
+    if RayConfig.shadow
+      return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1, ray.eye))
 
     ambient = light.intensity.ambient
     ambientColor = f.reflectionProperties.ambientColor.multiply(ambient)
@@ -161,47 +188,54 @@ class RayTracer
     if antialiasing == 1
       pixelX = ((abstractPixelX + 0.5) - (camera.width / 2))
       pixelY = ((abstractPixelY + 0.5) - (camera.height / 2)) * -1
-      arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+      this.calcRayForPixel(arr, camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'grid'
       x = [1..antialiasing]
       for i in x
         for j in x
           # translate pixels, so that 0/0 is in the center of the image
-          pixelX = ((abstractPixelX + i/antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-          pixelY = ((abstractPixelY + j/antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
-          arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+          pixelX = ((abstractPixelX + i / antialiasing - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((abstractPixelY + j / antialiasing - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          this.calcRayForPixel(arr, camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'random'
-      x = [1..(antialiasing*antialiasing)]
+      x = [1..(antialiasing * antialiasing)]
       z = antialiasing_translation_mean / 2
       for i in x
         # translate pixels, so that 0/0 is in the center of the image
         pixelX = ((abstractPixelX + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
         pixelY = ((abstractPixelY + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
-        arr.push this.calcRayForPixel(camera, pixelX, pixelY)
+        this.calcRayForPixel(arr, camera, pixelX, pixelY)
     else if RayConfig.antialiasingTechnique == 'jittered'
       x = [1..antialiasing]
       antialiasing_translation_mean = antialiasing_translation_mean + (1 / antialiasing / 2)
-      z = 1/antialiasing
+      z = 1 / antialiasing
       for i in x
         for j in x
           # translate pixels, so that 0/0 is in the center of the image
-          pixelX = ((abstractPixelX + i/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
-          pixelY = ((abstractPixelY + j/antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
-          arr.push this.calcRayForPixel(camera, pixelX, pixelY)
-
+          pixelX = ((abstractPixelX + i / antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.width / 2))
+          pixelY = ((abstractPixelY + j / antialiasing + Math.random(z) - antialiasing_translation_mean + 0.5) - (camera.height / 2)) * -1
+          this.calcRayForPixel(arr, camera, pixelX, pixelY)
 
     arr
 
-  calcRayForPixel: (camera, pixelX, pixelY) ->
+  calcRayForPixel: (arr, camera, pixelX, pixelY) ->
     # calculate point in imagePane in 3D
     p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
     p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
 
-    # vector from camera position to point in image pane
-    direction = p.subtract(camera.position)
 
-    # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
-    new Ray($L(camera.position, direction), 1, 1)
+    if ModuleId.C1
+      vert = camera.upDirection.cross(camera.direction)
+      dist = 1 # TODO: fix this!
+      posL = camera.position.add(vert.multiply(dist)) # -1
+      arr.push new Ray($L(posL, p.subtract(posL).toUnitVector()), 1, 1, 'left')
+      posR = camera.position.add(vert.multiply(-dist))  # 1
+      arr.push new Ray($L(posR, p.subtract(posR).toUnitVector()), 1, 1, 'right')
+    else
+      # vector from camera position to point in image pane
+      direction = p.subtract(camera.position)
+      # Assume that the camera is not inside an object (otherwise, the refraction index would not be 1)
+      arr.push new Ray($L(camera.position, direction), 1, 1, 'center')
 
 
 this.RayTracer = RayTracer
