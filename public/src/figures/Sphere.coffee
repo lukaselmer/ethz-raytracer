@@ -1,9 +1,26 @@
 class Sphere
   constructor: (@center, @radius, @reflectionProperties) ->
     @radiusSquared = @radius * @radius
+    @boundingBoxCache = new BoundingBox(@center.e(1) + @radius, @center.e(1) - @radius, @center.e(2) + @radius, @center.e(2) - @radius, , @center.e(3) + @radius, @center.e(3) - @radius)
 
   norm: (intersectionPoint, ray) ->
     intersectionPoint.subtract(@center).toUnitVector()
+
+  boundingBox: () ->
+    @boundingBoxCache
+
+  isLeft: (plane) ->
+    @boundingBoxCache.right >= plane.point.e(1)
+  isRight: (plane) ->
+    @boundingBoxCache.left <= plane.point.e(1)
+  isTop: (plane) ->
+    @boundingBoxCache.top >= plane.point.e(2)
+  isBottom: (plane) ->
+    @boundingBoxCache.bottom <= plane.point.e(2)
+  isBack: (plane) ->
+    @boundingBoxCache.back >= plane.point.e(3)
+  isFront: (plane) ->
+    @boundingBoxCache.front <= plane.point.e(3)
 
   solutions: (ray) ->
     o = ray.line.anchor

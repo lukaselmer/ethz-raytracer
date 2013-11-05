@@ -52,5 +52,6 @@ this.initRayConfig = () ->
     recDepth: 2
     intersectionDelta: 0.00001
     strongRefraction: true
+    octreeMaxDepth: 5
 
 initRayConfig()
