@@ -1,5 +1,5 @@
 class Sphere
-  constructor: (@center, @radius, @reflectionProperties) ->
+  constructor: (@center, @radius, @reflectionProperties, @texture, @normalmap) ->
     @radiusSquared = @radius * @radius
     @boundingBoxCache = new BoundingBox(@center.e(1) + @radius, @center.e(1) - @radius, @center.e(2) + @radius, @center.e(2) - @radius, @center.e(3) + @radius, @center.e(3) - @radius)
 

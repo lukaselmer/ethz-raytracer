@@ -54,5 +54,7 @@ this.initRayConfig = () ->
     strongRefraction: true
     octreeMaxDepth: 5
     shadow: true
+    texture: true
+    normalmap: true
 
 initRayConfig()

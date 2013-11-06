@@ -28,7 +28,8 @@
 
     <!-- TGA and OBJ loader for exercise 3 -->
     <script type="text/javascript">
-        var waitingForData = 0; // # of asynchronous loading requests in progress (renderer will wait for them to be done)
+        window.waitingForData = 0; // # of asynchronous loading requests in progress (renderer will wait for them to be done)
+        // GLOBAL VARIABLE => bad => refactor it!
     </script>
     <script src="lib/read_tga.js"></script>
     <script src="lib/read_obj.js"></script>

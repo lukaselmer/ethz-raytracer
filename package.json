@@ -30,6 +30,7 @@
     "karma-mocha": "~0.1.0",
     "grunt-notify": "~0.2.13",
     "karma-growl-reporter": "~0.1.1",
-    "karma-osx-reporter": "0.0.4"
+    "karma-osx-reporter": "0.0.4",
+    "karma-phantomjs-launcher": "~0.1.0"
   }
 }

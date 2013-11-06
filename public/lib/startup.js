@@ -78,7 +78,7 @@
     // render the new 50 lines of pixels
     function render(scene) {
         if (curPixelY == RayConfig.height) return; // rendering done
-        if (waitingForData > 0) { // textures are not loaded yet, wait for them
+        if (window.waitingForData > 0) { // textures are not loaded yet, wait for them
             console.log("Some data are not loaded yet, waiting for them before starting to render");
             setTimeout(function () {
                 render(scene);

@@ -50,7 +50,7 @@ module.exports = function (grunt) {
             },
             ci: {
                 singleRun: true,
-                browsers: ['PhantomJS']
+                configFile: 'karma.conf.js'
             },
             unit: {
             }

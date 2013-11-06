@@ -223,13 +223,11 @@ class RayTracer
     p = camera.imageCenter.add(camera.upDirection.multiply(pixelY / camera.height * camera.imagePaneHeight))
     p = p.add(camera.rightDirection.multiply(pixelX / camera.width * camera.imagePaneWidth))
 
-
     if ModuleId.C1
-      vert = camera.upDirection.cross(camera.direction)
-      dist = 1 # TODO: fix this!
-      posL = camera.position.add(vert.multiply(dist)) # -1
+      dist = 0.5
+      posL = camera.position.add(camera.rightDirection.multiply(-dist)) # -1
       arr.push new Ray($L(posL, p.subtract(posL).toUnitVector()), 1, 1, 'left')
-      posR = camera.position.add(vert.multiply(-dist))  # 1
+      posR = camera.position.add(camera.rightDirection.multiply(dist)) # 1
       arr.push new Ray($L(posR, p.subtract(posR).toUnitVector()), 1, 1, 'right')
     else
       # vector from camera position to point in image pane
