@@ -45,6 +45,7 @@ this.initRayConfig = () ->
     width: 800 #800
     height: 600 #600
     illumination: true
+    shadow: true
     reflection: ModuleId.B1
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
@@ -53,7 +54,6 @@ this.initRayConfig = () ->
     intersectionDelta: 0.00001
     strongRefraction: false
     octreeMaxDepth: 2000
-    shadow: true
     texture: true
     normalmap: true
     octree: true
