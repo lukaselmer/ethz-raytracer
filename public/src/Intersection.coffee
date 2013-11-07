@@ -14,7 +14,20 @@ class Intersection
       @distance2 = @t2
 
   getNormal: () ->
-    @normal = @normalFigure.norm(this.getPoint(), @ray) unless @normal
+    unless @normal
+      if RayConfig.normalmap && @figure.normalmap
+        old_normal = @normalFigure.norm(this.getPoint())
+
+        tangent1 = old_normal.cross($V([0, 1, 0])).toUnitVector()
+        tangent2 = old_normal.cross(tangent1).toUnitVector()
+        transMatrix = $M([tangent1.multiply(-1).elements, tangent2.multiply(-1).elements, old_normal.elements])
+        transMatrix = transMatrix.transpose()
+        uv = @figure.calcUV(@getPoint())
+        new_normal = @figure.normalmap.getNormal(uv[0], uv[1])
+
+        @normal = transMatrix.multiply(new_normal)
+      else
+        @normal = @normalFigure.norm(this.getPoint(), @ray)
     @normal
 
   getPoint: () ->
