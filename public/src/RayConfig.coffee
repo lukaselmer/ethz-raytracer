@@ -49,10 +49,10 @@ this.initRayConfig = () ->
     refraction: ModuleId.B1
     antialiasing: if ModuleId.B2 then 4 else 1 # set to 1 for no antialiasing
     antialiasingTechnique: 'grid' # options: grid, random, jittered
-    recDepth: 2
+    recDepth: 4
     intersectionDelta: 0.00001
     strongRefraction: false
-    octreeMaxDepth: 20
+    octreeMaxDepth: 2000
     shadow: true
     texture: true
     normalmap: true

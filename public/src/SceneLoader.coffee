@@ -139,13 +139,31 @@ class SceneLoader
 
   loadC3: (scene) ->
     #resp = MeshLoader.loadMeshData("data/mini.obj")
-    resp = MeshLoader.loadMeshData("data/sphere.obj")
-    sphereMesh1 = new MeshLoader(resp, $V([0, 0, 0]), 2).createMesh()
-    sphereMesh1.reflectionProperties = new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)
-    sphereMesh2 = new MeshLoader(resp, $V([1.25, 1.25, 3]), 0.5).createMesh()
-    sphereMesh2.reflectionProperties = new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)
-    scene.addObject sphereMesh1
-    scene.addObject sphereMesh2
+    #resp = MeshLoader.loadMeshData("data/sphere.obj")
+    unless ModuleId.SP1
+      resp = MeshLoader.loadMeshData("data/sphere.obj")
+      sphereMesh1 = new MeshLoader(resp, $V([0, 0, 0]), 2).createMesh()
+      sphereMesh1.reflectionProperties = new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)
+      sphereMesh2 = new MeshLoader(resp, $V([1.25, 1.25, 3]), 0.5).createMesh()
+      sphereMesh2.reflectionProperties = new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)
+      scene.addObject sphereMesh1
+      scene.addObject sphereMesh2
+    else
+      #resp = MeshLoader.loadMeshData("data/teapot.obj")
+      #sphereMesh1 = new MeshLoader(resp, $V([0, 0, 0]), 0.2).createMesh()
+      #sphereMesh1.reflectionProperties = new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)
+      #scene.addObject sphereMesh1
+      #resp = MeshLoader.loadMeshData("data/neoSimian-organic.obj")
+      #resp = MeshLoader.loadMeshData("data/neoSimian-mech.obj")
+      sphereMesh2 = null
+      if(Math.random() > 0.5)
+        resp = MeshLoader.loadMeshData("data/ateneam.obj")
+        sphereMesh2 = new MeshLoader(resp, $V([0, 0, 0]), 0.0004).createMesh()
+      else
+        resp = MeshLoader.loadMeshData("data/dragon.obj")
+        sphereMesh2 = new MeshLoader(resp, $V([0, 0, 0]), 0.2).createMesh()
+      sphereMesh2.reflectionProperties = new ReflectionProperty(new Color(0.75, 0, 0), new Color(1, 0, 0), new Color(1, 1, 1), 32, Infinity)
+      scene.addObject sphereMesh2
 
   loadD1: (scene) ->
     for i in [0..9]
