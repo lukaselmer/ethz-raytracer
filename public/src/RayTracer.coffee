@@ -8,7 +8,6 @@ class RayTracer
     # 4. shade the intersection point using the meterial attributes and the lightings
     # 5. set the pixel color into the image buffer using the computed shading (for now set dummy color into the image buffer)
     rays = this.castRays(RayConfig.antialiasing, pixelX, pixelY)
-
     console.setRlog()
 
     traceRay = (ray) =>

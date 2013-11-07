@@ -65,8 +65,6 @@ class Sphere
     [t1, t2] = i
     new Intersection(ray, this, this, t1, t2, @reflectionProperties)
 
-
-
   getInclination: (unitVector) ->
     x = unitVector.e(1)
     y = unitVector.e(2)

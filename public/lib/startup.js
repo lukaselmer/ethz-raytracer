@@ -92,6 +92,7 @@
             for (curPixelX = 0; curPixelX < RayConfig.width; ++curPixelX) {
                 // compute the color for the current pixel
                 var color = raytracer.trace(curPixelX, curPixelY);
+                //if(curPixel > 80000) afasfsdaf();
 
                 // copy the result in the buffer
                 pixBuffer[4 * curPixel + 0] = color.e(1);

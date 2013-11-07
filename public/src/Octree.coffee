@@ -1,36 +1,92 @@
+# Concept from: http://www.brandonpelfrey.com/blog/coding-a-simple-octree/
+
 class Octree
-  constructor: () ->
-    @maxDepth = RayConfig.octreeMaxDepth
-    @figures = []
-    @built = false
-    @type = 'child'
+  constructor: (@bounding, @depth) ->
+    #@maxDepth = RayConfig.octreeMaxDepth
+    @data = null
+    @children = new Array()
 
-  add: (figure) ->
-    @figures.push(figure)
-    @built = false
+  isLeaf: ->
+    @children.length is 0
 
-  calculateBoundingBox: () ->
-    @boundingBox = new BoundingBox(0, 0, 0, 0, 0, 0)
+  makeChildren: ->
+    x = 0
+    while x <= 1
+      y = 0
+      while y <= 1
+        z = 0
+        while z <= 1
+          new_b = new BoundingBox(@bounding.x_max - (1 - x) * @bounding.x_width / 2,
+            @bounding.x_min + x * @bounding.x_width / 2,
+            @bounding.y_max - (1 - y) * @bounding.y_width / 2,
+            @bounding.y_min + y * @bounding.y_width / 2,
+            @bounding.z_max - (1 - z) * @bounding.z_width / 2,
+            @bounding.z_min + z * @bounding.z_width / 2)
+          @children.push new Octree(new_b, @depth - 1)
+          z++
+        y++
+      x++
 
-    for figure in @figures
-      @boundingBox.update(figure.boundingBox())
+  insertObject: (object) ->
+    if @depth <= 0
+      @data = new Array() if @data == null
+      @data.push object
+      return
 
-  build: () ->
-    this.calculateBoundingBox()
-    @octreeNode = new OctreeNode()
-    @built = true
+    # The node is a leaf (no children/not split) and has no data assigned.
+    if this.isLeaf() && @data == null
 
-  getFirstFigure: (ray) ->
-    this.build() unless @built
+      # This is the easiest! We’ve ended up in a small region of space
+      # with no data currently assigned and no children,
+      # so we will simply assign this data point
+      # to this leaf node and we’re done!
+      @data = object
+      return
 
-    min = Infinity
-    ret = null
-    for figure in @figures
-      i = figure.intersection(ray)
-      continue unless i
+    # The node is a leaf (no children/not split),
+    # but it already has a point assigned.
+    if @isLeaf() && @data != null
 
-      dist = i.distance
-      if dist != null && dist < min
-        ret = i
-        min = dist
-    ret
+      # This is slightly more complicated.
+      # We are at a leaf but there’s something already here.
+      # Since we only store one point in a leaf, we will actually
+      # need to remember what was here already, split this node
+      # into eight children, and then re-insert the old point and
+      # our new point into the new children.
+      # Note: it’s entirely possible that this will happen several
+      # times during insert if these two points are really close
+      # to each other. (On the order of the logarithm of the space
+      # separating them.)
+      this.makeChildren()
+      tmp = @data
+      @data = null
+      this.insertObject tmp
+
+    # The node is an interior node to the tree (has 8 children).
+    unless this.isLeaf()
+
+      # Since we never store data in an interior node
+      # of the tree in this article, we will find out
+      # which of the eight children the data point
+      # lies in and then make a recursive call to
+      # insert into that child.
+      objBounding = object.getBounding()
+      i = 0
+
+      while i < @children.length
+        @children[i].insertObject object  if @children[i].bounding.contains(objBounding)
+        i++
+      return
+
+  getIntersectionObjects: (ray) ->
+    if this.isLeaf()
+      return @data if @data != null && @depth <= 0
+      return [@data] if @data != null
+      return []
+    objects = new Array()
+    i = 0
+
+    while i < 8
+      objects = objects.concat(@children[i].getIntersectionObjects(ray)) if @children[i].bounding.intersects(ray)
+      i++
+    objects

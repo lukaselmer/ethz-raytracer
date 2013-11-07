@@ -52,9 +52,10 @@ this.initRayConfig = () ->
     recDepth: 2
     intersectionDelta: 0.00001
     strongRefraction: false
-    octreeMaxDepth: 5
+    octreeMaxDepth: 20
     shadow: true
     texture: true
     normalmap: true
+    octree: true
 
 initRayConfig()
