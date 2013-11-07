@@ -3,6 +3,9 @@ class Sphere
     @radiusSquared = @radius * @radius
     @boundingBoxCache = new BoundingBox(@center.e(1) + @radius, @center.e(1) - @radius, @center.e(2) + @radius, @center.e(2) - @radius, @center.e(3) + @radius, @center.e(3) - @radius)
 
+    @northDirection = $V([0, 1, 1]).toUnitVector()
+    @meridianDirection = $V([-1, 1, -1]).toUnitVector()
+
   norm: (intersectionPoint, ray) ->
     intersectionPoint.subtract(@center).toUnitVector()
 
@@ -61,3 +64,43 @@ class Sphere
     return null unless i
     [t1, t2] = i
     new Intersection(ray, this, this, t1, t2, @reflectionProperties)
+
+
+
+  getInclination: (unitVector) ->
+    x = unitVector.e(1)
+    y = unitVector.e(2)
+    z = unitVector.e(3)
+    Math.acos y
+
+  getAzimuth: (unitVector) ->
+    x = unitVector.e(1)
+    y = unitVector.e(2)
+    z = unitVector.e(3)
+    azimuth = Math.atan(x / z)
+    if z < 0
+      azimuth += Math.PI
+    else azimuth += Math.PI * 2  if x < 0
+    azimuth
+
+  calcUV: (intersectionPoint) ->
+    center_to_point = intersectionPoint.subtract(@center).toUnitVector()
+    origin = $V([0, 0, 0])
+    rightDirection = $V([1, 0, 0])
+    upDirection = $V([0, 1, 0])
+    frontDirection = $V([0, 0, 1])
+    meridianAngle = -Math.acos(@meridianDirection.dot(frontDirection))
+    center_to_point = center_to_point.rotate(meridianAngle, $L($V([0, 0, 0]), upDirection))
+    upDirection = upDirection.rotate(meridianAngle, $L(origin, upDirection))
+    rightDirection = rightDirection.rotate(meridianAngle, $L(origin, upDirection))
+    frontDirection = frontDirection.rotate(meridianAngle, $L(origin, upDirection))
+    northAngle = -Math.acos(@northDirection.dot(upDirection))
+    center_to_point = center_to_point.rotate(northAngle, $L(origin, rightDirection))
+    upDirection = upDirection.rotate(northAngle, $L(origin, rightDirection))
+    rightDirection = rightDirection.rotate(northAngle, $L(origin, rightDirection))
+    frontDirection = frontDirection.rotate(northAngle, $L(origin, rightDirection))
+    inclination = @getInclination(center_to_point)
+    azimuth = @getAzimuth(center_to_point)
+    u = azimuth / (2 * Math.PI)
+    v = -(inclination / Math.PI) + 1
+    [u, v]

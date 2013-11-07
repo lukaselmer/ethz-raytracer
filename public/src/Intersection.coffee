@@ -22,8 +22,19 @@ class Intersection
     @point
 
   getAmbientColor: () ->
+    if RayConfig.texture and @figure.texture
+      uv = @figure.calcUV(@getPoint())
+      return @figure.texture.getPixelColor(uv[0], uv[1])
     @figure.reflectionProperties.ambientColor
+
   getSpecularColor: () ->
+    if RayConfig.texture and @figure.texture
+      uv = @figure.calcUV(@getPoint())
+      return @figure.texture.getPixelColor(uv[0], uv[1])
     @figure.reflectionProperties.specularColor
+
   getDiffuseColor: () ->
+    if RayConfig.texture and @figure.texture
+      uv = @figure.calcUV(@getPoint())
+      return @figure.texture.getPixelColor(uv[0], uv[1])
     @figure.reflectionProperties.diffuseColor
