@@ -56,7 +56,7 @@ class RayTracer
     return color unless intersection
 
     globalAmbient = @scene.globalAmbient
-    globalAmbientColor = intersection.figure.reflectionProperties.ambientColor.multiply(globalAmbient)
+    globalAmbientColor = intersection.getAmbientColor().multiply(globalAmbient)
     color = color.add(globalAmbientColor)
 
     if RayConfig.illumination
@@ -78,11 +78,11 @@ class RayTracer
     color = new Color(0, 0, 0)
     if reflectedRay?
       specularReflection = this.traceRec(reflectedRay, times - 1)
-      specularReflection = specularReflection.multiplyColor(f.reflectionProperties.specularColor)
+      specularReflection = specularReflection.multiplyColor(intersection.getSpecularColor())
       color = color.add specularReflection.multiply(reflectedRay.power)
     if refractedRay?
       specularRefraction = this.traceRec(refractedRay, times - 1)
-      specularRefraction = specularRefraction.multiplyColor(f.reflectionProperties.specularColor) unless ray.isInside() && RayConfig.strongRefraction
+      specularRefraction = specularRefraction.multiplyColor(intersection.getSpecularColor()) unless ray.isInside() && RayConfig.strongRefraction
       color = color.add specularRefraction.multiply(refractedRay.power)
     color
 
@@ -156,15 +156,14 @@ class RayTracer
     if RayConfig.shadow
       return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1, ray.eye))
 
-    ambient = light.intensity.ambient
-    ambientColor = f.reflectionProperties.ambientColor.multiply(ambient)
+    ambientColor = intersection.getAmbientColor().multiply(light.intensity.ambient)
 
-    kd = f.reflectionProperties.diffuseColor
+    kd = intersection.getDiffuseColor()
     E = light.intensity.diffuse * nv.dot(wl)
     diffuse = kd.multiply(E * light.intensity.diffuse)
 
     n = f.reflectionProperties.specularExponent
-    ks = f.reflectionProperties.specularColor
+    ks = intersection.getSpecularColor()
     frac = Math.pow(wr.dot(wl), n) / nv.dot(wl)
     spepcularIntensity = frac * E
     spepcularIntensity = 0 if frac < 0 || isNaN(spepcularIntensity)

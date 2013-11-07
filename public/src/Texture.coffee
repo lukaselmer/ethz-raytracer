@@ -13,10 +13,10 @@ class Texture
 
   @earth: (prefix) ->
     d = "data/Earth.tga"
-    s = if prefix then prefix + d else d : d
+    s = if prefix then prefix + d else d
     new Texture(s, 32.0, Infinity)
 
   @moon: (prefix) ->
     d = "data/Earth.tga"
-    s = if prefix then prefix + d else d : d
+    s = if prefix then prefix + d else d
     new Texture(s, 16.0, Infinity)

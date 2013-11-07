@@ -13,4 +13,3 @@ describe "Texture", ->
     runs ->
       expect(earth.tga.header.width).toEqual 2048
       expect(moon.tga.header.width).toEqual 2048
-      

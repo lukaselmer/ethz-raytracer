@@ -20,3 +20,10 @@ class Intersection
   getPoint: () ->
     @point = @ray.line.anchor.add(@ray.line.direction.multiply(@distance)) unless @point
     @point
+
+  getAmbientColor: () ->
+    @figure.reflectionProperties.ambientColor
+  getSpecularColor: () ->
+    @figure.reflectionProperties.specularColor
+  getDiffuseColor: () ->
+    @figure.reflectionProperties.diffuseColor
