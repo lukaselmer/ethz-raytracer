@@ -7,9 +7,9 @@ class Mesh
     @triangles = new Array()
     @octree = new Octree(null, 0)
 
-  getBounding: ->
-    @bounding = BoundingBox.getBoundingFromObjects(@triangles) unless @bounding
-    @bounding
+  getBoundingBox: ->
+    @boundingBox = BoundingBox.getBoundingBoxFromObjects(@triangles) unless @boundingBox
+    @boundingBox
 
   generateTriangles: ->
     i = 0
@@ -22,7 +22,7 @@ class Mesh
 
     if RayConfig.octree
       depth = Math.min(Math.ceil(Math.log(@triangles.length) / Math.log(8)), RayConfig.octreeMaxDepth)
-      @octree = new Octree(this.getBounding(), depth)
+      @octree = new Octree(this.getBoundingBox(), depth)
       i = 0
 
       while i < @triangles.length

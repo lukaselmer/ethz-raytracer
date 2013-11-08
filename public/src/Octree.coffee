@@ -1,7 +1,7 @@
 # Concept from: http://www.brandonpelfrey.com/blog/coding-a-simple-octree/
 
 class Octree
-  constructor: (@bounding, @depth) ->
+  constructor: (@boundingBox, @depth) ->
     #@maxDepth = RayConfig.octreeMaxDepth
     @data = null
     @children = new Array()
@@ -16,12 +16,12 @@ class Octree
       while y <= 1
         z = 0
         while z <= 1
-          new_b = new BoundingBox(@bounding.x_max - (1 - x) * @bounding.x_width / 2,
-            @bounding.x_min + x * @bounding.x_width / 2,
-            @bounding.y_max - (1 - y) * @bounding.y_width / 2,
-            @bounding.y_min + y * @bounding.y_width / 2,
-            @bounding.z_max - (1 - z) * @bounding.z_width / 2,
-            @bounding.z_min + z * @bounding.z_width / 2)
+          new_b = new BoundingBox(@boundingBox.x_max - (1 - x) * @boundingBox.x_width / 2,
+            @boundingBox.x_min + x * @boundingBox.x_width / 2,
+            @boundingBox.y_max - (1 - y) * @boundingBox.y_width / 2,
+            @boundingBox.y_min + y * @boundingBox.y_width / 2,
+            @boundingBox.z_max - (1 - z) * @boundingBox.z_width / 2,
+            @boundingBox.z_min + z * @boundingBox.z_width / 2)
           @children.push new Octree(new_b, @depth - 1)
           z++
         y++
@@ -70,11 +70,11 @@ class Octree
       # which of the eight children the data point
       # lies in and then make a recursive call to
       # insert into that child.
-      objBounding = object.getBounding()
+      objBoundingBox = object.getBoundingBox()
       i = 0
 
       while i < @children.length
-        @children[i].insertObject object  if @children[i].bounding.contains(objBounding)
+        @children[i].insertObject object  if @children[i].boundingBox.contains(objBoundingBox)
         i++
       return
 
@@ -87,6 +87,6 @@ class Octree
     i = 0
 
     while i < 8
-      objects = objects.concat(@children[i].getIntersectionObjects(ray)) if @children[i].bounding.intersects(ray)
+      objects = objects.concat(@children[i].getIntersectionObjects(ray)) if @children[i].boundingBox.intersects(ray)
       i++
     objects

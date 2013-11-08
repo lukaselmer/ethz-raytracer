@@ -1,8 +1,8 @@
 class Triangle
   constructor: (@v1, @v2, @v3, @reflectionProperties) ->
 
-  getBounding: ->
-    return @bounding if @bounding
+  getBoundingBox: ->
+    return @boundingBox if @boundingBox
     min_x = Infinity
     min_y = Infinity
     min_z = Infinity
@@ -27,8 +27,8 @@ class Triangle
     max_z = @v1.e(3) if @v1.e(3) > max_z
     max_z = @v2.e(3) if @v2.e(3) > max_z
     max_z = @v3.e(3) if @v3.e(3) > max_z
-    @bounding = new BoundingBox(max_x, min_x, max_y, min_y, max_z, min_z)
-    @bounding
+    @boundingBox = new BoundingBox(max_x, min_x, max_y, min_y, max_z, min_z)
+    @boundingBox
 
   getArea: ->
     return @area if @area

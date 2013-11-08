@@ -5,10 +5,10 @@ class BoundingBox
     @z_width = @z_max - @z_min
 
 
-  contains: (bounding) ->
-    return false  if bounding.x_min > @x_max or bounding.x_max < @x_min
-    return false  if bounding.y_min > @y_max or bounding.y_max < @y_min
-    return false  if bounding.z_min > @z_max or bounding.z_max < @z_min
+  contains: (boundingBox) ->
+    return false  if boundingBox.x_min > @x_max or boundingBox.x_max < @x_min
+    return false  if boundingBox.y_min > @y_max or boundingBox.y_max < @y_min
+    return false  if boundingBox.z_min > @z_max or boundingBox.z_max < @z_min
     true
 
   intersects: (ray) ->
@@ -32,7 +32,7 @@ class BoundingBox
     # intersection if t_min < t_max
     t_min < t_max
 
-  @getBoundingFromObjects: (objects) ->
+  @getBoundingBoxFromObjects: (objects) ->
     x_min = Infinity
     y_min = Infinity
     z_min = Infinity
@@ -45,12 +45,12 @@ class BoundingBox
 
 
     while i < objects.length
-      bounding = objects[i].getBounding()
-      x_min = bounding.x_min if bounding.x_min < x_min
-      y_min = bounding.y_min if bounding.y_min < y_min
-      z_min = bounding.z_min if bounding.z_min < z_min
-      x_max = bounding.x_max if bounding.x_max > x_max
-      y_max = bounding.y_max if bounding.y_max > y_max
-      z_max = bounding.z_max if bounding.z_max > z_max
+      boundingBox = objects[i].getBoundingBox()
+      x_min = boundingBox.x_min if boundingBox.x_min < x_min
+      y_min = boundingBox.y_min if boundingBox.y_min < y_min
+      z_min = boundingBox.z_min if boundingBox.z_min < z_min
+      x_max = boundingBox.x_max if boundingBox.x_max > x_max
+      y_max = boundingBox.y_max if boundingBox.y_max > y_max
+      z_max = boundingBox.z_max if boundingBox.z_max > z_max
       i++
     new BoundingBox(x_max, x_min, y_max, y_min, z_max, z_min)
