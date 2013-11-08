@@ -20,6 +20,13 @@ This raytracer is written in Coffeescript, which is very similar and compiles do
 * `npm install -g grunt-cli`
 * `grunt`
 
+You can also use the `grunt watch` command to automatically build the files when the coffeescript files change.
+
+Running the tests:
+
+* Unit tests: `grunt karma:unit` (run automatically when the JS files are changed, works fine with `grunt watch`)
+* CI tests `grunt karma:ci` (run only once, for continuous integration)
+
 
 Code structure
 --------------
@@ -27,12 +34,20 @@ Code structure
 Overview of the public folder:
 
 ```
-├── data (data used in ex. 3)
+public
+├── data (data used in C2 and C3)
 │   ├── Earth.tga
 │   ├── EarthNormal.tga
 │   ├── Moon.tga
 │   ├── MoonNormal.tga
-│   └── sphere.obj
+│   ├── ateneal.obj
+│   ├── ateneam.obj
+│   ├── dragon.obj
+│   ├── mini.obj
+│   ├── neoSimian-mech.obj
+│   ├── neoSimian-organic.obj
+│   ├── sphere.obj
+│   └── teapot.obj
 ├── index.html (the main file to be opened in the browser)
 ├── lib (libraries used for the raytracer)
 │   ├── bootstrap.min.js
@@ -64,31 +79,38 @@ Overview of the public folder:
 │   ├── cg-ex2-lukaselmer-B4B1B2.png
 │   └── cg-ex2-lukaselmer-moduleid.png
 └── src (source code)
+    ├── BoundingBox.coffee
     ├── Camera.coffee
     ├── Color.coffee
     ├── Intersection.coffee
     ├── Light.coffee
     ├── LightIntensity.coffee
+    ├── MeshLoader.coffee
+    ├── NormalMap.coffee
+    ├── Octree.coffee
     ├── Ray.coffee
     ├── RayConfig.coffee
     ├── RayTracer.coffee
     ├── ReflectionProperty.coffee
     ├── Scene.coffee
     ├── SceneLoader.coffee
-    ├── figures (the different objects which can be rendered)
+    ├── Texture.coffee
+    ├── figures
     │   ├── Cylinder.coffee
     │   ├── Ellipsoid.coffee
     │   ├── Hemisphere.coffee
+    │   ├── Mesh.coffee
     │   ├── MultipleObjectsIntersection.coffee
     │   ├── Plane.coffee
-    │   └── Sphere.coffee
+    │   ├── Sphere.coffee
+    │   └── Triangle.coffee
     └── helpers.coffee
 ```			
 			
 Unit Tests
 ----------
 
-Although there are only few tests yet, a unit testing framework is prepared. To execute the tests run `grunt karma`.
+There are now some basic unit tests. To execute the tests run `grunt karma`. Make shure you run a browser on port 63342, otherwise the texture tests will fail.
 
 
 Implemented Features
@@ -118,4 +140,29 @@ The two quadrics are implemented.
 ### B4: Boolean operations
 
 The boolean operations are implemented.
+
+### C1: Stereoscopic rendering
+
+Is implemented, but yet untested due to the lack of stereoscopic glasses.
+
+### C2: Texture mapping and bump mapping
+
+Is implemented with
+
+* Surface mapping
+* Anti-aliasing
+* North poles are on top
+* Bump mapping
+
+### C3: Triangle meshes
+
+The triangle meshes are implemented and some additional objects have been rendered.
+
+### D1: Octree
+
+Is implemented. Without the octree, rendering meshes is nearly impossible. The depth of the octree can be configured, and should be set high of objects with many faces.
+
+### D2: Area lights
+
+The area lights for the shadow rays are implemented. The monte carlo integration is done with a jitter algorithm. Additional algorithms could be implemented.
 
