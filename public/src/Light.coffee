@@ -24,14 +24,20 @@ class Light
         s = -RayConfig.areaLightShadowsAxis / 2
         while s < RayConfig.areaLightShadowsAxis / 2
           newP = null
+          z = 0
           loop
+            z++
             x = r * cellSize + cellSize * Math.random()
             y = s * cellSize + cellSize * Math.random()
             newP = @location.add(@rightDirection.multiply(x)).add(@upDirection.multiply(y))
             break if newP.distanceFrom(@location) <= @radius
-          wl = newP.subtract(p).toUnitVector();
-          light_intersection = scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1, ray.eye))
-          shadowIntensity += 1 / RayConfig.areaLightShadows if light_intersection
+            if z > 20
+              newP = null
+              break
+          if newP
+            wl = newP.subtract(p).toUnitVector();
+            light_intersection = scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1, ray.eye))
+            shadowIntensity += 1 / RayConfig.areaLightShadows if light_intersection
           i++
           s++
         r++
