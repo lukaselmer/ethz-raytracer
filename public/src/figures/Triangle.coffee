@@ -1,6 +1,9 @@
 class Triangle
   constructor: (@v1, @v2, @v3, @reflectionProperties) ->
 
+  #boundingBox: ->
+  #  this.getBoundingBox()
+
   getBoundingBox: ->
     return @boundingBox if @boundingBox
     min_x = Infinity
@@ -49,13 +52,14 @@ class Triangle
 
   norm: (intersectionPoint) ->
     return this.getTriangleNormal() unless @n1 || @n2 || @n3
-    d1 = intersectionPoint.distanceFrom(@v1)
-    d2 = intersectionPoint.distanceFrom(@v2)
-    d3 = intersectionPoint.distanceFrom(@v3)
+    t1 = new Triangle(intersectionPoint, @v2, @v3).getArea()
+    t2 = new Triangle(intersectionPoint, @v1, @v3).getArea()
+    t3 = new Triangle(intersectionPoint, @v1, @v2).getArea()
+
     normal = $V([0, 0, 0])
-    normal = normal.add(@n1.multiply(1 / d1))
-    normal = normal.add(@n2.multiply(1 / d2))
-    normal = normal.add(@n3.multiply(1 / d3))
+    normal = normal.add(@n1.multiply(t1))
+    normal = normal.add(@n2.multiply(t2))
+    normal = normal.add(@n3.multiply(t3))
     normal.toUnitVector()
 
   intersection: (ray) ->
