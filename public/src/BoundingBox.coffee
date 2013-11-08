@@ -41,9 +41,6 @@ class BoundingBox
     z_max = -Infinity
     i = 0
 
-
-
-
     while i < objects.length
       boundingBox = objects[i].getBoundingBox()
       x_min = boundingBox.x_min if boundingBox.x_min < x_min

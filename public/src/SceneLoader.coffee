@@ -156,6 +156,7 @@ class SceneLoader
       sphereMesh2.reflectionProperties = new ReflectionProperty(new Color(0, 0, 0.75), new Color(0, 0, 1), new Color(0.5, 0.5, 1), 16, 1.5)
       scene.addObject sphereMesh1
       scene.addObject sphereMesh2
+      scene.buildOctree()
     else
       #resp = MeshLoader.loadMeshData("data/teapot.obj")
       #sphereMesh1 = new MeshLoader(resp, $V([0, 0, 0]), 0.2).createMesh()

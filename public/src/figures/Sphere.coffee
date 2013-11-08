@@ -11,6 +11,8 @@ class Sphere
 
   boundingBox: () ->
     @boundingBoxCache
+  getBoundingBox: () ->
+    @boundingBoxCache
 
   isLeft: (plane) ->
     @boundingBoxCache.right >= plane.point.e(1)

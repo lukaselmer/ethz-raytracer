@@ -1,9 +1,6 @@
 class Triangle
   constructor: (@v1, @v2, @v3, @reflectionProperties) ->
 
-  #boundingBox: ->
-  #  this.getBoundingBox()
-
   getBoundingBox: ->
     return @boundingBox if @boundingBox
     min_x = Infinity

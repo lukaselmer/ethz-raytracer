@@ -5,7 +5,7 @@ class Light
       @rightDirection = @direction.cross(@upDirection)
 
   calculateShadowRatio: (p, wl, ray, scene) ->
-    if @radius
+    if @radius && ModuleId.D2
       # Area light
       return this.calculateAreaLight(p, wl, ray, scene)
     else

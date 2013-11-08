@@ -8,7 +8,7 @@ describe "Octree", ->
     o.add(s)
 
   it "should get an instersection for staight line", ->
-    t = new Octree()
+    t = new Octree(this.getBoundingBox(), depth)
     s1 = new Sphere($V([1,1,1]), 0.5, null)
     t.add(s1)
     s2 = new Sphere($V([1,1,2]), 0.5, null)
