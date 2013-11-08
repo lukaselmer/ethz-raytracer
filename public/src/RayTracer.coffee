@@ -152,8 +152,10 @@ class RayTracer
     wr = nv.multiply(2).multiply(w.dot(nv)).subtract(w).toUnitVector()
 
     # Shadow
+    shadowRatio = 0
     if RayConfig.shadow
-      return new Color(0, 0, 0) if @scene.firstIntersection(new Ray($L(p, wl), ray.refraction, 1, ray.eye))
+      shadowRatio = light.calculateShadowRatio(p, wl, ray, @scene)
+      return new Color(0, 0, 0) if shadowRatio == 1
 
     ambientColor = intersection.getAmbientColor().multiply(light.intensity.ambient)
 
@@ -172,7 +174,7 @@ class RayTracer
 
     raise "Invalid state #{color}" if isNaN(color.val.elements[0])
 
-    color
+    color.multiply(1 - shadowRatio)
 
 
   castRays: (antialiasing, abstractPixelX, abstractPixelY) ->

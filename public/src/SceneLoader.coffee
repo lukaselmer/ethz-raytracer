@@ -12,10 +12,18 @@ class SceneLoader
     #camera = new Camera($V([0, 3, 10]), $V([0, -0.5, -1]), $V([0, 0, 1]), 1, fieldOfView, RayConfig.width, RayConfig.height)
 
     scene = new Scene(camera, 0.2)
-    scene.addLight(new Light($V([10, 10, 10]), new Color(1, 1, 1), new LightIntensity(0, 1, 1)))
+    scene.addLight(this.loadLight())
     #scene.addLight(new Light(new Color(1, 1, 1), $V([10, -10, 10]), new LightIntensity(0, 1, 1)))
     #scene.addLight(new Light(new Color(1, 1, 1), $V([10, 5, 10]), new LightIntensity(0, 1, 1)))
     scene
+
+  loadLight: () ->
+    if ModuleId.D2
+      direction = $V([0,0,0]).subtract($V([10,10,10])).toUnitVector()
+      new Light($V([10, 10, 10]), new Color(1, 1, 1), new LightIntensity(0, 1, 1),
+        1, direction)
+    else
+      new Light($V([10, 10, 10]), new Color(1, 1, 1), new LightIntensity(0, 1, 1))
 
   loadScene: () ->
     scene = @scene
