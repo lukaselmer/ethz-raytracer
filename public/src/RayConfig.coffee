@@ -57,7 +57,6 @@ this.initRayConfig = () ->
     texture: true
     normalmap: true
     octree: true
-
     areaLightShadows: 50
     areaLightShadowsAxis: 8 # 8*8/4*pi => have 64 square boxes on a square, 50 of them will hit the disc
 
