@@ -6,7 +6,7 @@ A raytracer for the computer graphics course at ethz.
 Live demo
 ---------
 
-The renderer is deployed to https://raytracer-eth.renuo.ch/
+The renderer is deployed to https://ethz-raytracer.firebaseapp.com/
 
 Alternatively, the repository can be cloned from https://github.com/lukaselmer/ethz-raytracer , but then the code first has to be compiled (see compilation instructions).
 
