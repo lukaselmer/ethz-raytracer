@@ -6,6 +6,7 @@
   "scripts": {
     "start": "grunt watch",
     "build": "grunt",
+    "prepare-test": "grunt prepare_test",
     "test": "grunt karma:ci",
     "preview": "http-server -c-1 public"
   },
@@ -19,21 +20,22 @@
     "url": "https://github.com/lukaselmer/ethz-raytracer/issues"
   },
   "devDependencies": {
-    "grunt-cli": "~0.1.9",
-    "grunt-contrib-jshint": "~0.6.4",
-    "grunt-contrib-uglify": "~0.2.4",
-    "grunt": "~0.4.1",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-qunit": "~0.3.0",
     "coffee": "0.1.0",
-    "grunt-contrib-concat": "~0.3.0",
+    "grunt": "~0.4.1",
+    "grunt-cli": "~0.1.9",
     "grunt-contrib-coffee": "~0.7.0",
-    "mocha": "~1.13.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-qunit": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.4",
+    "grunt-contrib-watch": "~0.5.3",
     "grunt-karma": "~0.6.2",
-    "karma-mocha": "~0.1.0",
     "grunt-notify": "~0.2.13",
+    "http-server": "^14.1.1",
     "karma-growl-reporter": "~0.1.1",
+    "karma-mocha": "~0.1.0",
     "karma-osx-reporter": "0.0.4",
-    "karma-phantomjs-launcher": "~0.1.0"
+    "karma-phantomjs-launcher": "~0.1.0",
+    "mocha": "~1.13.0"
   }
 }
