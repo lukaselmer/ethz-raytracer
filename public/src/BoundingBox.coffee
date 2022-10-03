@@ -42,12 +42,20 @@ class BoundingBox
     i = 0
 
     while i < objects.length
-      boundingBox = objects[i].getBoundingBox()
-      x_min = boundingBox.x_min if boundingBox.x_min < x_min
-      y_min = boundingBox.y_min if boundingBox.y_min < y_min
-      z_min = boundingBox.z_min if boundingBox.z_min < z_min
-      x_max = boundingBox.x_max if boundingBox.x_max > x_max
-      y_max = boundingBox.y_max if boundingBox.y_max > y_max
-      z_max = boundingBox.z_max if boundingBox.z_max > z_max
+      if objects[i].getBoundingBox
+        boundingBox = objects[i].getBoundingBox()
+        x_min = boundingBox.x_min if boundingBox.x_min < x_min
+        y_min = boundingBox.y_min if boundingBox.y_min < y_min
+        z_min = boundingBox.z_min if boundingBox.z_min < z_min
+        x_max = boundingBox.x_max if boundingBox.x_max > x_max
+        y_max = boundingBox.y_max if boundingBox.y_max > y_max
+        z_max = boundingBox.z_max if boundingBox.z_max > z_max
+      else
+        x_min = Number.MIN_VALUE
+        y_min = Number.MIN_VALUE
+        z_min = Number.MIN_VALUE
+        x_max = Number.MAX_VALUE
+        y_max = Number.MAX_VALUE
+        z_max = Number.MAX_VALUE
       i++
     new BoundingBox(x_max, x_min, y_max, y_min, z_max, z_min)

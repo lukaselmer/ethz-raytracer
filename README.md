@@ -16,11 +16,11 @@ Compilation instructions
 This raytracer is written in Coffeescript, which is very similar and compiles down to JavaScript. To compile the coffeescript sources:
 
 * Install NodeJS
-* `npm install`
+* `npm install --force`
 * `npm install -g grunt-cli`
-* `grunt`
+* `npm run build`
 
-You can also use the `grunt watch` command to automatically build the files when the coffeescript files change.
+You can also use the `npm start` command to automatically build the files when the coffeescript files change.
 
 Running the tests:
 

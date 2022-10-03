@@ -4,7 +4,10 @@
   "description": "ethz-raytracer ==============",
   "main": "Gruntfile.js",
   "scripts": {
-    "test": "grunt karma:ci"
+    "start": "grunt watch",
+    "build": "grunt",
+    "test": "grunt karma:ci",
+    "preview": "http-server -c-1 public"
   },
   "repository": {
     "type": "git",
@@ -22,7 +25,7 @@
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-qunit": "~0.3.0",
-    "coffee": "0.0.1",
+    "coffee": "0.1.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-coffee": "~0.7.0",
     "mocha": "~1.13.0",
