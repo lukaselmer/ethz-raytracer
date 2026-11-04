@@ -1,0 +1,3 @@
+[install]
+# Supply-chain hardening: only install versions published at least 3 days ago (in seconds)
+minimumReleaseAge = 259200
